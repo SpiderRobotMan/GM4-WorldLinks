@@ -3,8 +3,7 @@ package me.theminecoder.minecraft.worldlinks.database;
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
 import me.theminecoder.minecraft.worldlinks.link.Link;
 import me.theminecoder.minecraft.worldlinks.link.LinkType;
-import me.theminecoder.minecraft.worldlinks.player.STPlayer;
-import com.zaxxer.hikari.HikariDataSource;
+import me.theminecoder.minecraft.worldlinks.player.LinkPlayer;
 import org.bukkit.Location;
 
 import java.sql.Connection;
@@ -16,132 +15,19 @@ import java.util.List;
 
 public class Database {
 
-    private String host;
-    private String port;
-    private String database;
-    private String username;
-    private String password;
-
     private WorldLinks plugin;
-    private HikariDataSource source;
-
-    /**
-     * Creates a new instance of the database class using the settings stored in the
-     * plugin configuration.
-     *
-     * @param plugin Instance of the plugin
-     */
-    public Database(WorldLinks plugin) {
-        this.plugin = plugin;
-        this.host = plugin.getConfig().getString("database.host", "127.0.0.1");
-        this.port = plugin.getConfig().getString("database.port", "3306");
-        this.database = plugin.getConfig().getString("database.database", "test");
-        this.username = plugin.getConfig().getString("database.username", "username");
-        this.password = plugin.getConfig().getString("database.password", "password");
-    }
-
-    /**
-     * Connects to the database.
-     */
-    public void connect() {
-        source = new HikariDataSource();
-
-        source.setMaximumPoolSize(10);
-        source.setDataSourceClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
-        source.addDataSourceProperty("serverName", this.host);
-        source.addDataSourceProperty("port", this.port);
-        source.addDataSourceProperty("databaseName", this.database);
-        source.addDataSourceProperty("user", this.username);
-        source.addDataSourceProperty("password", this.password);
-
-        try {
-            this.createUserTable();
-        } catch (SQLException e) {
-            System.out.println("Failed to create player_data table: " + e.getMessage());
-        }
-
-        try {
-            this.createUnlockTable();
-        } catch (SQLException e) {
-            System.out.println("Failed to create unlocked_links table: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Disconnects from the database.
-     */
-    public void disconnect() {
-        try {
-            source.close();
-        } catch (Exception e) {
-            //Failed to close cleanly...
-        }
-    }
-
-    /**
-     * Automatically creates the player_data table.
-     */
-    public void createUserTable() throws SQLException {
-        Connection connection = null;
-        PreparedStatement ps = null;
-
-        try {
-            connection = source.getConnection();
-
-            ps = connection.prepareStatement("CREATE TABLE `player_data` ("
-                    + "`id` int NOT NULL AUTO_INCREMENT,"
-                    + "`uuid` VARCHAR(255) NOT NULL UNIQUE,"
-                    + "`spawn_type` VARCHAR(255) DEFAULT NULL,"
-                    + "`spawn_server` VARCHAR(255) DEFAULT NULL,"
-                    + "`spawn_world` VARCHAR(255) DEFAULT NULL,"
-                    + "`spawn_x` FLOAT DEFAULT 0.0,"
-                    + "`spawn_y` FLOAT DEFAULT 0.0,"
-                    + "`spawn_z` FLOAT DEFAULT 0.0,"
-                    + "PRIMARY KEY (id));");
-
-            ps.execute();
-        } finally {
-            if (ps != null) ps.close();
-            if (connection != null) connection.close();
-        }
-    }
-
-    /**
-     * Automatically creates the unlocked_links table.
-     */
-    public void createUnlockTable() throws SQLException {
-        Connection connection = null;
-        PreparedStatement ps = null;
-
-        try {
-            connection = source.getConnection();
-
-            ps = connection.prepareStatement("CREATE TABLE `unlocked_links` ("
-                    + "`id` int NOT NULL AUTO_INCREMENT,"
-                    + "`uuid` VARCHAR(255) NOT NULL,"
-                    + "`name` VARCHAR(255) NOT NULL,"
-                    + "`unlocked_at` DATETIME NOT NULL DEFAULT NOW(),"
-                    + "PRIMARY KEY (id));");
-
-            ps.execute();
-        } finally {
-            if (ps != null) ps.close();
-            if (connection != null) connection.close();
-        }
-    }
 
     /**
      * Loads a player's data from the database by their UUID.
      *
      * @param uuid The player's UUID
-     * @return The STPlayer, or null if it failed.
+     * @return The LinkPlayer, or null if it failed.
      */
-    public STPlayer loadPlayerByUUID(String uuid) throws SQLException {
+    public LinkPlayer loadPlayerByUUID(String uuid) throws SQLException {
         Connection connection = null;
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("SELECT * FROM `player_data` WHERE `uuid`=?");
             ps.setString(1, uuid);
@@ -149,7 +35,7 @@ public class Database {
             ResultSet set = ps.executeQuery();
 
             if (set.next()) {
-                return new STPlayer(set, loadUnlockedLinks(uuid));
+                return new LinkPlayer(set, loadUnlockedLinks(uuid));
             } else {
                 return null;
             }
@@ -169,7 +55,6 @@ public class Database {
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("INSERT INTO `player_data` " +
                     "(`uuid`, `spawn_type`, `spawn_server`, `spawn_world`, `spawn_x`, `spawn_y`, `spawn_z`) VALUES(?,?,?,?,?,?,?)");
@@ -196,12 +81,11 @@ public class Database {
      * @param spawnServer The server to spawn at
      * @param spawnLoc    The locationt to spawn at
      */
-    public void  yerupdateSpawnData(String uuid, LinkType spawnType, String spawnServer, Location spawnLoc) throws SQLException {
+    public void updateSpawnData(String uuid, LinkType spawnType, String spawnServer, Location spawnLoc) throws SQLException {
         Connection connection = null;
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("UPDATE `player_data` SET `spawn_type`=?,`spawn_server`=?,`spawn_world`=?," +
                     "`spawn_x`=?,`spawn_y`=?,`spawn_z`=? WHERE `uuid`=?");
@@ -233,7 +117,6 @@ public class Database {
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("UPDATE `player_data` SET `spawn_type`=?,`spawn_server`=?,`spawn_world`=?," +
                     "`spawn_x`=?,`spawn_y`=?,`spawn_z`=? WHERE `uuid`=?");
@@ -264,7 +147,6 @@ public class Database {
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("SELECT * FROM `unlocked_links` WHERE `uuid`=?");
             ps.setString(1, uuid);
@@ -300,7 +182,6 @@ public class Database {
         PreparedStatement ps = null;
 
         try {
-            connection = source.getConnection();
 
             ps = connection.prepareStatement("INSERT INTO `unlocked_links` (`uuid`, `name`) VALUES(?,?)");
 

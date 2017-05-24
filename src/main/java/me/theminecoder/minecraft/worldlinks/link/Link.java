@@ -1,6 +1,6 @@
 package me.theminecoder.minecraft.worldlinks.link;
 
-import me.theminecoder.minecraft.worldlinks.player.STPlayer;
+import me.theminecoder.minecraft.worldlinks.player.LinkPlayer;
 import me.theminecoder.minecraft.worldlinks.utils.ParticleUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -142,8 +142,15 @@ public class Link {
      *
      * @param player The player
      */
-    public void displayToPlayer(STPlayer player) {
-        ParticleUtils.sendParticle(player.getBukkitPlayer(), this.particle, calculatePositionRelativeTo(player.getBukkitPlayer().getEyeLocation()), this.particleData[0], this.particleData[1], this.particleData[2], 1, 0);
+    public void displayToPlayer(LinkPlayer player) {
+        ParticleUtils.sendParticle(
+                player.getBukkitPlayer(),
+                this.particle,
+                calculatePositionRelativeTo(player.getBukkitPlayer().getEyeLocation()),
+                this.particleData[0], this.particleData[1], this.particleData[2],
+                1,
+                0
+        );
     }
 
 }

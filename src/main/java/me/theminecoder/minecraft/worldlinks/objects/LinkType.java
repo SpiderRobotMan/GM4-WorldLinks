@@ -1,4 +1,4 @@
-package me.theminecoder.minecraft.worldlinks.link;
+package me.theminecoder.minecraft.worldlinks.objects;
 
 import org.bukkit.Location;
 

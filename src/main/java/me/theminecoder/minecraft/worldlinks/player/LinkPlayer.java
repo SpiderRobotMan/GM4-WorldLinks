@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class STPlayer {
+public class LinkPlayer {
 
     private String uuid;
     private String spawnServer = null;
@@ -26,22 +26,22 @@ public class STPlayer {
     private List<Link> unlockedLinks = new ArrayList<Link>();
 
     /**
-     * Constructs a new STPlayer object for a player.
+     * Constructs a new LinkPlayer object for a player.
      *
      * @param uuid The player's UUID
      */
-    public STPlayer(String uuid) {
+    public LinkPlayer(String uuid) {
         this.uuid = uuid;
     }
 
     /**
-     * Constructs a new STPlayer object from a ResultSet fetched from
+     * Constructs a new LinkPlayer object from a ResultSet fetched from
      * the database.
      *
      * @param set The ResultSet to load from
      * @throws SQLException Thrown if data is invalid
      */
-    public STPlayer(ResultSet set, List<Link> unlockedLinks) throws SQLException {
+    public LinkPlayer(ResultSet set, List<Link> unlockedLinks) throws SQLException {
         this.uuid = set.getString("uuid");
         this.unlockedLinks = unlockedLinks;
         this.spawnType = LinkType.getByConfigName(set.getString("spawn_type"));
@@ -134,12 +134,12 @@ public class STPlayer {
         // run the database update in an async task.
         new BukkitRunnable() {
             public void run() {
-                try {
-                    WorldLinks.getInstance().getDB().unlockLink(getUUID(), link);
+//                try {
+//                    WorldLinks.getInstance().getDB().unlockLink(getUUID(), link);
                     unlockedLinks.add(link);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
             }
         }.runTaskAsynchronously(WorldLinks.getInstance());
     }
@@ -170,11 +170,11 @@ public class STPlayer {
         // run the database update in an async task.
         new BukkitRunnable() {
             public void run() {
-                try {
-                    WorldLinks.getInstance().getDB().updateSpawnData(getUUID(), type, server, location);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    WorldLinks.getInstance().getDB().updateSpawnData(getUUID(), type, server, location);
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
 
                 // transport them to the new server...
                 ServerUtils.sendPlayerToServer(WorldLinks.getInstance(), player, server);

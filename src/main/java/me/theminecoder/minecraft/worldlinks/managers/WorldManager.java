@@ -2,7 +2,6 @@ package me.theminecoder.minecraft.worldlinks.managers;
 
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
 import me.theminecoder.minecraft.worldlinks.link.Link;
-import me.theminecoder.minecraft.worldlinks.player.STPlayer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -36,7 +35,6 @@ public class WorldManager implements Listener {
      */
     public WorldManager(WorldLinks plugin) {
         this.plugin = plugin;
-        this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.loadWorldLinks();
     }
 
@@ -104,23 +102,6 @@ public class WorldManager implements Listener {
             }
         }
         return null;
-    }
-
-    public void displayWorldLinks() {
-        for (STPlayer player : plugin.getPlayerManager().getOnlinePlayers()) {
-            if (isViewingWorldLinks(player.getBukkitPlayer())) displayWorldLinks(player);
-        }
-    }
-
-    /**
-     * Displays all the player's available world links to them.
-     *
-     * @param player The player
-     */
-    public void displayWorldLinks(STPlayer player) {
-        for (Link link : player.getUnlockedLinks()) {
-            link.displayToPlayer(player);
-        }
     }
 
     /**
@@ -214,7 +195,7 @@ public class WorldManager implements Listener {
 
                 //Check if there was a match.
                 if (fixedLoc.distance(blockLoc) <= 0.1) {
-                    plugin.getPlayerManager().getPlayer(player).transport(link);
+//                    plugin.getPlayerManager().getPlayer(player).transport(link);
                     return;
                 }
             }

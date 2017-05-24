@@ -1,13 +1,24 @@
 package me.theminecoder.minecraft.worldlinks;
 
-import me.theminecoder.minecraft.worldlinks.database.Database;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+import me.theminecoder.minecraft.worldlinks.listeners.PlayerListener;
 import me.theminecoder.minecraft.worldlinks.managers.PlayerManager;
 import me.theminecoder.minecraft.worldlinks.managers.WorldManager;
-import me.theminecoder.minecraft.worldlinks.player.STPlayer;
+import me.theminecoder.minecraft.worldlinks.objects.Link;
+import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
+import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayerTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.stream.Stream;
 
 public class WorldLinks extends JavaPlugin {
 
@@ -17,7 +28,9 @@ public class WorldLinks extends JavaPlugin {
     private WorldManager worldManager;
 
     private String serverName;
-    private Database database;
+
+    private Dao<Link, String> linkDao;
+    private Dao<LinkPlayer, UUID> linkPlayerDao;
 
     /**
      * Gets an instance of the running plugin.
@@ -33,18 +46,37 @@ public class WorldLinks extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
+        try {
+            JdbcConnectionSource source = new JdbcPooledConnectionSource("jdbc:mysql://"
+                    + getConfig().getString("database.host", "127.0.0.1")
+                    + getConfig().getString("database.port", "3306")
+                    + "/"
+                    + getConfig().getString("database.database", "test"),
+                    getConfig().getString("database.username", "username"),
+                    getConfig().getString("database.password", "password")
+            );
+
+            TableUtils.createTableIfNotExists(source, Link.class);
+            TableUtils.createTableIfNotExists(source, me.theminecoder.minecraft.worldlinks.objects.LinkPlayer.class);
+
+            linkDao = DaoManager.createDao(source, Link.class);
+            linkPlayerDao = DaoManager.createDao(source, LinkPlayer.class);
+        } catch (SQLException e) {
+            this.getLogger().log(Level.SEVERE, "Could not connect to the database!", e);
+            return;
+        }
+
         this.serverName = getConfig().getString("server.name", "error");
         this.playerManager = new PlayerManager(this);
         this.worldManager = new WorldManager(this);
 
-        this.database = new Database(this);
-        this.database.connect();
+        Stream.of(
+                playerManager,
+                worldManager,
+                new PlayerListener(this)
+        ).forEach(listener -> this.getServer().getPluginManager().registerEvents(listener, this));
 
-        new BukkitRunnable() {
-            public void run() {
-                getWorldManager().displayWorldLinks();
-            }
-        }.runTaskTimer(this, 0L, 1L);
+        this.getServer().getScheduler().runTaskTimer(this, new WorldLinkDisplayerTask(this), 0, 0);
 
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
     }
@@ -56,15 +88,6 @@ public class WorldLinks extends JavaPlugin {
      */
     public String getServerName() {
         return serverName;
-    }
-
-    /**
-     * Gets the database instance.
-     *
-     * @return The database
-     */
-    public Database getDB() {
-        return database;
     }
 
     /**
@@ -86,23 +109,30 @@ public class WorldLinks extends JavaPlugin {
     }
 
     /**
-     * Gets a STPlayer by their Bukkit player object.
+     * Gets a LinkPlayer by their Bukkit player object.
      *
      * @param player The player
-     * @return STPlayer or null if not online
+     * @return LinkPlayer or null if not online
      */
-    public STPlayer getPlayer(Player player) {
+    public LinkPlayer getPlayer(Player player) {
         return getPlayerManager().getPlayer(player);
     }
 
     /**
-     * Gets a STPlayer by their username.
+     * Gets a LinkPlayer by their username.
      *
      * @param username The username
-     * @return STPlayer or null if not online
+     * @return LinkPlayer or null if not online
      */
-    public STPlayer getPlayer(String username) {
+    public LinkPlayer getPlayer(String username) {
         return getPlayerManager().getPlayer(username);
     }
 
+    public Dao<Link, String> getLinkDao() {
+        return linkDao;
+    }
+
+    public Dao<LinkPlayer, UUID> getLinkPlayerDao() {
+        return linkPlayerDao;
+    }
 }
