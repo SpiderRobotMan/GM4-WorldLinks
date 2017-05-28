@@ -6,12 +6,40 @@ public enum LinkType {
 
     ABSOLUTE {
         @Override
-        public Location getFixedLocation(Location location) {
-            return location;
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return newLocation;
+        }
+    },
+    ABSOLUTE_SAFE {
+        @Override
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return null;
+        }
+    },
+    RELATIVE {
+        @Override
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return newLocation.add(oldLocation.getX(), oldLocation.getY(), oldLocation.getZ());
+        }
+    },
+    RELATIVE_SAFE {
+        @Override
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return null;
+        }
+    },
+    LOCAL {
+        @Override
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return new Location(newLocation.getWorld(), oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(), oldLocation.getYaw(), oldLocation.getPitch());
+        }
+    },
+    LOCAL_SAFE {
+        @Override
+        public Location getFixedLocation(Location oldLocation, Location newLocation) {
+            return null;
         }
     };
-
-    public abstract Location getFixedLocation(Location location);
 
     /**
      * Gets a link type by its name from the config.
@@ -27,5 +55,7 @@ public enum LinkType {
         }
         return null;
     }
+
+    public abstract Location getFixedLocation(Location oldLocation, Location newLocation);
 
 }

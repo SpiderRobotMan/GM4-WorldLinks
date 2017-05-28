@@ -23,7 +23,10 @@ public class LinkPlayer extends BaseDaoEnabled {
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     private Link activeLink;
 
-    LinkPlayer(){
+    @DatabaseField
+    private LinkLocation oldLocation;
+
+    LinkPlayer() {
     }
 
     public LinkPlayer(UUID uuid) {
@@ -48,5 +51,13 @@ public class LinkPlayer extends BaseDaoEnabled {
 
     public void setActiveLink(Link activeLink) {
         this.activeLink = activeLink;
+    }
+
+    public LinkLocation getOldLocation() {
+        return oldLocation;
+    }
+
+    public void setOldLocation(LinkLocation oldLocation) {
+        this.oldLocation = oldLocation;
     }
 }

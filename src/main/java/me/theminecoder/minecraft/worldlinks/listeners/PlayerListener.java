@@ -57,7 +57,7 @@ public class PlayerListener implements Listener {
         }.runTaskAsynchronously(plugin);
 
         // absolute means position them exactly where the coordinates state.
-        event.getPlayer().teleport(activeLink.getLinkType().getFixedLocation(activeLink.getLocation().getBukkitLocation()));
+        event.getPlayer().teleport(activeLink.getLinkType().getFixedLocation(player.getOldLocation().getBukkitLocation(), activeLink.getLocation().getBukkitLocation()));
     }
 
 }

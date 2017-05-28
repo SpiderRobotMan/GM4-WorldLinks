@@ -1,15 +1,8 @@
 package me.theminecoder.minecraft.worldlinks.objects;
 
-import com.j256.ormlite.field.DataPersister;
-import com.j256.ormlite.field.FieldType;
-import com.j256.ormlite.field.SqlType;
-import com.j256.ormlite.field.types.BaseDataType;
-import com.j256.ormlite.field.types.StringType;
-import com.j256.ormlite.support.DatabaseResults;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-
-import java.sql.SQLException;
+import org.bukkit.World;
 
 public class LinkLocation {
 
@@ -17,15 +10,21 @@ public class LinkLocation {
     private double x;
     private double y;
     private double z;
+    private float yaw;
+    private float pitch;
 
-    protected LinkLocation(){
+    protected LinkLocation() {
     }
 
     public LinkLocation(Location location) {
-        this(location.getWorld().getName(), location.getX(), location.getY(), location.getZ());
+        this(location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
     }
 
     public LinkLocation(String world, double x, double y, double z) {
+        this(world, x, y, z, 0, 0);
+    }
+
+    public LinkLocation(String world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -49,7 +48,11 @@ public class LinkLocation {
     }
 
     public Location getBukkitLocation() {
-        return new Location(Bukkit.getWorld(getWorld()), getX(), getY(), getZ());
+        return this.getBukkitLocation(Bukkit.getWorld(getWorld()));
+    }
+
+    public Location getBukkitLocation(World world) {
+        return new Location(world, x, y, z, yaw, pitch);
     }
 
 }
