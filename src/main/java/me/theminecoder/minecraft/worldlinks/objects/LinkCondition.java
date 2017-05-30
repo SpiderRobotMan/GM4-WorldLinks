@@ -3,6 +3,8 @@ package me.theminecoder.minecraft.worldlinks.objects;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.util.Map;
+
 /**
  * @author theminecoder
  */
@@ -15,7 +17,16 @@ public class LinkCondition {
     @DatabaseField(foreign = true)
     private Link link;
 
-    LinkCondition(){
+    @DatabaseField
+    private LinkConditionType type;
+
+    @DatabaseField
+    private Map<String, Object> config;
+
+    @DatabaseField
+    private boolean unlocksLink = false;
+
+    LinkCondition() {
     }
 
 }
