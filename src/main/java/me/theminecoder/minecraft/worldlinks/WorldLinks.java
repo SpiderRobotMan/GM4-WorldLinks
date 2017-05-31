@@ -10,6 +10,7 @@ import me.theminecoder.minecraft.worldlinks.managers.PlayerManager;
 import me.theminecoder.minecraft.worldlinks.managers.WorldManager;
 import me.theminecoder.minecraft.worldlinks.objects.Link;
 import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
+import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayerTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -31,6 +32,7 @@ public class WorldLinks extends JavaPlugin {
 
     private Dao<Link, String> linkDao;
     private Dao<LinkPlayer, UUID> linkPlayerDao;
+    private Dao<LinkTravel, Integer> linkTravelDao;
 
     /**
      * Gets an instance of the running plugin.
@@ -61,6 +63,7 @@ public class WorldLinks extends JavaPlugin {
 
             linkDao = DaoManager.createDao(source, Link.class);
             linkPlayerDao = DaoManager.createDao(source, LinkPlayer.class);
+            linkTravelDao = DaoManager.createDao(source, LinkTravel.class);
         } catch (SQLException e) {
             this.getLogger().log(Level.SEVERE, "Could not connect to the database!", e);
             return;
@@ -134,5 +137,9 @@ public class WorldLinks extends JavaPlugin {
 
     public Dao<LinkPlayer, UUID> getLinkPlayerDao() {
         return linkPlayerDao;
+    }
+
+    public Dao<LinkTravel, Integer> getLinkTravelDao() {
+        return linkTravelDao;
     }
 }

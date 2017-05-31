@@ -2,7 +2,9 @@ package me.theminecoder.minecraft.worldlinks.managers;
 
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
 import me.theminecoder.minecraft.worldlinks.link.Link;
+import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -195,7 +197,8 @@ public class WorldManager implements Listener {
 
                 //Check if there was a match.
                 if (fixedLoc.distance(blockLoc) <= 0.1) {
-//                    plugin.getPlayerManager().getPlayer(player).transport(link);
+                    plugin.getLinkTravelDao().create(new LinkTravel(player.getUniqueId(), Bukkit.getServerId(), link.getServer(), link))
+                    plugin.getPlayerManager().getPlayer(player).transport(link);
                     return;
                 }
             }
