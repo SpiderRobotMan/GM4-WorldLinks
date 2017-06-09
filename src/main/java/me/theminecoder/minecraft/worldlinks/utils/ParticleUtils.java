@@ -53,4 +53,20 @@ public class ParticleUtils {
         }
     }
 
+    /**
+     * Calculates the position to display the particle relative to a fixed
+     * location.
+     *
+     * @param loc The location
+     * @return The location
+     */
+    public static Location calculatePositionRelativeTo(Location loc, Location pLoc) {
+        double x = pLoc.getBlockX() + 0.5D;
+        double y = pLoc.getBlockY() + 0.5D;
+        double z = pLoc.getBlockZ() + 0.5D;
+
+        //Add the location to the player's existing location.
+        return loc.getBlock().getLocation().clone().add(x, y, z);
+    }
+
 }

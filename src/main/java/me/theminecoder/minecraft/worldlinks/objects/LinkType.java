@@ -1,5 +1,6 @@
 package me.theminecoder.minecraft.worldlinks.objects;
 
+import me.theminecoder.minecraft.worldlinks.utils.LocationUtils;
 import org.bukkit.Location;
 
 public enum LinkType {
@@ -13,7 +14,7 @@ public enum LinkType {
     ABSOLUTE_SAFE {
         @Override
         public Location getFixedLocation(Location oldLocation, Location newLocation) {
-            return null;
+            return LocationUtils.getSafeLocation(newLocation, 5, 3);
         }
     },
     RELATIVE {
@@ -25,7 +26,7 @@ public enum LinkType {
     RELATIVE_SAFE {
         @Override
         public Location getFixedLocation(Location oldLocation, Location newLocation) {
-            return null;
+            return LocationUtils.getSafeLocation(newLocation.add(oldLocation.getX(), oldLocation.getY(), oldLocation.getZ()), 30, 7);
         }
     },
     LOCAL {
@@ -37,7 +38,7 @@ public enum LinkType {
     LOCAL_SAFE {
         @Override
         public Location getFixedLocation(Location oldLocation, Location newLocation) {
-            return null;
+            return LocationUtils.getSafeLocation(newLocation, 5, 3);
         }
     };
 

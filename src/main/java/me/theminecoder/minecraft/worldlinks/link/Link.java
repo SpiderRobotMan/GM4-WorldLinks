@@ -119,23 +119,7 @@ public class Link {
         return locData;
     }
 
-    /**
-     * Calculates the position to display the link relative to a fixed
-     * location.
-     *
-     * @param loc The location
-     * @return The location
-     */
-    public Location calculatePositionRelativeTo(Location loc) {
-        Location pLoc = particleLoc.getBukkitLocation();
 
-        double x = pLoc.getBlockX() + 0.5D;
-        double y = pLoc.getBlockY() + 0.5D;
-        double z = pLoc.getBlockZ() + 0.5D;
-
-        //Add the location to the player's existing location.
-        return loc.getBlock().getLocation().clone().add(x, y, z);
-    }
 
     /**
      * Displays the link particles to a player.
@@ -146,7 +130,7 @@ public class Link {
         ParticleUtils.sendParticle(
                 player.getBukkitPlayer(),
                 this.particle,
-                calculatePositionRelativeTo(player.getBukkitPlayer().getEyeLocation()),
+                ParticleUtils.calculatePositionRelativeTo(player.getBukkitPlayer().getEyeLocation(), particleLoc.getBukkitLocation()),
                 this.particleData[0], this.particleData[1], this.particleData[2],
                 1,
                 0
