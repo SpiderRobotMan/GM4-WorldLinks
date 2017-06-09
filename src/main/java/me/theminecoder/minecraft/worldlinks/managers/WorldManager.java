@@ -1,13 +1,13 @@
 package me.theminecoder.minecraft.worldlinks.managers;
 
+import com.google.common.collect.Range;
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
-import me.theminecoder.minecraft.worldlinks.link.Link;
+import me.theminecoder.minecraft.worldlinks.objects.Link;
+import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
 import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
@@ -18,9 +18,10 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WorldManager implements Listener {
 
@@ -61,21 +62,21 @@ public class WorldManager implements Listener {
 
             Link link = null;
 
-            try {
-                link = new Link(linkConfig.getConfigurationSection(key));
-            } catch (InvalidConfigurationException e) {
-                plugin.getLogger().info("Failed to load link with ID '" + key + "': " + e.getMessage());
-                continue;
-            }
+//            try {
+//                link = new Link(linkConfig.getConfigurationSection(key));
+//            } catch (InvalidConfigurationException e) {
+//                plugin.getLogger().info("Failed to load link with ID '" + key + "': " + e.getMessage());
+//                continue;
+//            }
 
-            //Prevent two links with the same name being registered.
-            if (getWorldLink(link.getName()) != null) {
-                plugin.getLogger().info("Failed to load link with ID '" + key + "': A link with the name '" + link.getName() + "' already exists.");
-                continue;
-            }
+//            //Prevent two links with the same name being registered.
+//            if (getWorldLink(link.getName()) != null) {
+//                plugin.getLogger().info("Failed to load link with ID '" + key + "': A link with the name '" + link.getName() + "' already exists.");
+//                continue;
+//            }
 
-            worldLinks.add(link);
-            plugin.getLogger().info("Successfully loaded link: " + link.getName());
+//            worldLinks.add(link);
+//            plugin.getLogger().info("Successfully loaded link: " + link.getName());
         }
 
         plugin.getLogger().info("Finished loading links.");
@@ -178,6 +179,7 @@ public class WorldManager implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        LinkPlayer linkPlayer = plugin.getPlayer(player);
         ItemStack item = player.getItemInHand(); //Deprecated but compatible with older versions.
 
         //Check if the item in their hand is the selector item.
@@ -185,26 +187,20 @@ public class WorldManager implements Listener {
             return;
         }
 
-        List<Block> blocks = player.getLineOfSight((Set<Material>) null, 8);
-
-        //Loop through all results blocks and attempt to match them.
-        for (Block block : blocks) {
-            Location blockLoc = block.getLocation().add(0.5D, 0.5D, 0.5D);
-
-            //Loop through all world links and try and find a match.
-            for (Link link : getWorldLinks()) {
-                Location fixedLoc = link.calculatePositionRelativeTo(player.getEyeLocation());
-
-                //Check if there was a match.
-                if (fixedLoc.distance(blockLoc) <= 0.1) {
-                    plugin.getLinkTravelDao().create(new LinkTravel(player.getUniqueId(), Bukkit.getServerId(), link.getServer(), link))
-                    plugin.getPlayerManager().getPlayer(player).transport(link);
-                    return;
-                }
-            }
-
-            //Check if we've hit a dead end.
-            if (block.getType() != Material.AIR) {
+        //Loop through all unlocked links and try and find a match.
+        for (Link link : linkPlayer.getUnlockedLinks().stream().filter(link -> !link.getConditions().stream().anyMatch(linkCondition ->
+                !linkCondition.getType().valid(player, linkPlayer, linkCondition.getConfig())
+        )).collect(Collectors.toList())) {
+            if (Range.closed(link.getParticleAngle() - 20, link.getParticleAngle() + 20).contains(new Float(player.getLocation().getYaw()).intValue())) {
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    try {
+                        plugin.getLinkTravelDao().create(new LinkTravel(player.getUniqueId(), Bukkit.getServerId(), link.getServer(), link));
+//                    plugin.getPlayerManager().getPlayer(player).transport(link); //TODO
+                    } catch (SQLException e) {
+                        player.sendMessage(ChatColor.RED + "Error occurred in transport system, please contact the admins.");
+                        e.printStackTrace();
+                    }
+                });
                 return;
             }
         }

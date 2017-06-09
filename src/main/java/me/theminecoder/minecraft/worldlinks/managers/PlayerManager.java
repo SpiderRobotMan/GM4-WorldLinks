@@ -4,16 +4,14 @@ import me.theminecoder.minecraft.worldlinks.WorldLinks;
 import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerManager implements Listener {
+public class PlayerManager {
 
     private WorldLinks plugin;
 
@@ -66,11 +64,6 @@ public class PlayerManager implements Listener {
 
     public Map<String, LinkPlayer> getPlayerMap() {
         return playerMap;
-    }
-
-    @EventHandler
-    public void onBreak(BlockBreakEvent event) {
-//        plugin.getPlayerManager().getPlayer(event.getPlayer()).unlockLink(plugin.getWorldManager().getWorldLink("example"));
     }
 
 }

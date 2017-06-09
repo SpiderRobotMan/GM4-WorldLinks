@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
+import me.theminecoder.minecraft.worldlinks.WorldLinks;
 
 /**
  * @author theminecoder
@@ -30,6 +31,9 @@ public class Link extends BaseDaoEnabled {
     @DatabaseField
     private LinkLocation location;
 
+    @DatabaseField
+    private int particleAngle;
+
     @ForeignCollectionField(eager = true)
     private ForeignCollection<LinkCondition> conditions;
 
@@ -43,6 +47,7 @@ public class Link extends BaseDaoEnabled {
         this.particle = particle;
         this.linkType = linkType;
         this.location = location;
+        this.setDao(WorldLinks.getInstance().getLinkDao());
     }
 
     public String getId() {
@@ -71,6 +76,14 @@ public class Link extends BaseDaoEnabled {
 
     public void setParticle(String particle) {
         this.particle = particle;
+    }
+
+    public int getParticleAngle() {
+        return particleAngle;
+    }
+
+    public void setParticleAngle(int particleAngle) {
+        this.particleAngle = particleAngle;
     }
 
     public LinkType getLinkType() {

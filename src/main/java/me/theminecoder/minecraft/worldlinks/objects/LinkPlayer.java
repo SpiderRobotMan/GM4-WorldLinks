@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
+import me.theminecoder.minecraft.worldlinks.WorldLinks;
 
 import java.util.UUID;
 
@@ -31,6 +32,7 @@ public class LinkPlayer extends BaseDaoEnabled {
 
     public LinkPlayer(UUID uuid) {
         this.uuid = uuid;
+        this.setDao(WorldLinks.getInstance().getLinkPlayerDao());
     }
 
     public UUID getUuid() {

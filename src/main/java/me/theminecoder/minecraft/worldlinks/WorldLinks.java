@@ -2,6 +2,7 @@ package me.theminecoder.minecraft.worldlinks;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.field.DataPersisterManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -9,6 +10,7 @@ import me.theminecoder.minecraft.worldlinks.listeners.PlayerListener;
 import me.theminecoder.minecraft.worldlinks.managers.PlayerManager;
 import me.theminecoder.minecraft.worldlinks.managers.WorldManager;
 import me.theminecoder.minecraft.worldlinks.objects.Link;
+import me.theminecoder.minecraft.worldlinks.objects.LinkLocation;
 import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
 import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayerTask;
@@ -58,6 +60,8 @@ public class WorldLinks extends JavaPlugin {
                     getConfig().getString("database.password", "password")
             );
 
+            DataPersisterManager.registerDataPersisters(LinkLocation.Persister.getInstance());
+
             TableUtils.createTableIfNotExists(source, Link.class);
             TableUtils.createTableIfNotExists(source, me.theminecoder.minecraft.worldlinks.objects.LinkPlayer.class);
 
@@ -74,7 +78,6 @@ public class WorldLinks extends JavaPlugin {
         this.worldManager = new WorldManager(this);
 
         Stream.of(
-                playerManager,
                 worldManager,
                 new PlayerListener(this)
         ).forEach(listener -> this.getServer().getPluginManager().registerEvents(listener, this));
