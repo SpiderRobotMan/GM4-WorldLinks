@@ -163,47 +163,4 @@ public class WorldManager implements Listener {
         return false;
     }
 
-    @EventHandler
-    public void onSwitch(PlayerItemHeldEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItem(event.getNewSlot());
-
-        //Check if the item they switched to is the selector item.
-        if (isSelectorItem(item)) {
-            showWorldLinks(player, true);
-        } else {
-            showWorldLinks(player, false);
-        }
-    }
-
-    @EventHandler
-    public void onClick(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        LinkPlayer linkPlayer = plugin.getPlayer(player);
-        ItemStack item = player.getItemInHand(); //Deprecated but compatible with older versions.
-
-        //Check if the item in their hand is the selector item.
-        if (!isSelectorItem(item)) {
-            return;
-        }
-
-        //Loop through all unlocked links and try and find a match.
-        for (Link link : linkPlayer.getUnlockedLinks().stream().filter(link -> !link.getConditions().stream().anyMatch(linkCondition ->
-                !linkCondition.getType().valid(player, linkPlayer, linkCondition.getConfig())
-        )).collect(Collectors.toList())) {
-            if (Range.closed(link.getParticleAngle() - 20, link.getParticleAngle() + 20).contains(new Float(player.getLocation().getYaw()).intValue())) {
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-                        plugin.getLinkTravelDao().create(new LinkTravel(player.getUniqueId(), Bukkit.getServerId(), link.getServer(), link));
-//                    plugin.getPlayerManager().getPlayer(player).transport(link); //TODO
-                    } catch (SQLException e) {
-                        player.sendMessage(ChatColor.RED + "Error occurred in transport system, please contact the admins.");
-                        e.printStackTrace();
-                    }
-                });
-                return;
-            }
-        }
-    }
-
 }

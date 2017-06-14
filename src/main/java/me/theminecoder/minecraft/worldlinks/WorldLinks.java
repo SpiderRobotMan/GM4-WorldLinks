@@ -14,8 +14,12 @@ import me.theminecoder.minecraft.worldlinks.objects.LinkLocation;
 import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
 import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayerTask;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -27,10 +31,12 @@ public class WorldLinks extends JavaPlugin {
 
     private static WorldLinks instance;
 
+
     private PlayerManager playerManager;
     private WorldManager worldManager;
 
     private String serverName;
+    private final ItemStack selectorItem = new ItemStack(Material.STICK);
 
     private Dao<Link, String> linkDao;
     private Dao<LinkPlayer, UUID> linkPlayerDao;
@@ -49,6 +55,10 @@ public class WorldLinks extends JavaPlugin {
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
+
+        ItemMeta selectorMeta = selectorItem.getItemMeta();
+        selectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', getConfig().getString("selector.identifiable_lore", "World Selector")));
+        selectorItem.setItemMeta(selectorMeta);
 
         try {
             JdbcConnectionSource source = new JdbcPooledConnectionSource("jdbc:mysql://"
@@ -144,5 +154,9 @@ public class WorldLinks extends JavaPlugin {
 
     public Dao<LinkTravel, Integer> getLinkTravelDao() {
         return linkTravelDao;
+    }
+
+    public ItemStack getSelectorItem() {
+        return selectorItem;
     }
 }

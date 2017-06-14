@@ -27,6 +27,8 @@ public class LinkPlayer extends BaseDaoEnabled {
     @DatabaseField
     private LinkLocation oldLocation;
 
+    private transient boolean viewingWorldLinks = false;
+
     LinkPlayer() {
     }
 
@@ -61,5 +63,13 @@ public class LinkPlayer extends BaseDaoEnabled {
 
     public void setOldLocation(LinkLocation oldLocation) {
         this.oldLocation = oldLocation;
+    }
+
+    public boolean isViewingWorldLinks() {
+        return viewingWorldLinks;
+    }
+
+    public void setViewingWorldLinks(boolean viewingWorldLinks) {
+        this.viewingWorldLinks = viewingWorldLinks;
     }
 }
