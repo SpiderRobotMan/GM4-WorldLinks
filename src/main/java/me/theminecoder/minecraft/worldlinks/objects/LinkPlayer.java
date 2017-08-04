@@ -19,7 +19,7 @@ public class LinkPlayer extends BaseDaoEnabled {
     private UUID uuid;
 
     @ForeignCollectionField(eager = true)
-    private ForeignCollection<Link> unlockedLinks;
+    private ForeignCollection<LinkUnlock> unlockedLinks;
 
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     private Link activeLink;
@@ -41,11 +41,11 @@ public class LinkPlayer extends BaseDaoEnabled {
         return uuid;
     }
 
-    public ForeignCollection<Link> getUnlockedLinks() {
+    public ForeignCollection<LinkUnlock> getUnlockedLinks() {
         return unlockedLinks;
     }
 
-    public void setUnlockedLinks(ForeignCollection<Link> unlockedLinks) {
+    public void setUnlockedLinks(ForeignCollection<LinkUnlock> unlockedLinks) {
         this.unlockedLinks = unlockedLinks;
     }
 

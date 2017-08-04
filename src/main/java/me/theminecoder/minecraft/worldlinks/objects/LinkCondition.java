@@ -1,10 +1,12 @@
 package me.theminecoder.minecraft.worldlinks.objects;
 
-import com.google.common.collect.Maps;
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author theminecoder
@@ -21,8 +23,8 @@ public class LinkCondition {
     @DatabaseField
     private LinkConditionType type;
 
-    @DatabaseField
-    private Map<String, Object> config = Maps.newHashMap();
+    @ForeignCollectionField(eager = true)
+    private ForeignCollection<LinkConditionConfigValue> config;
 
     @DatabaseField
     private boolean unlocksLink = false;
@@ -43,8 +45,13 @@ public class LinkCondition {
         return type;
     }
 
-    public Map<String, Object> getConfig() {
-        return config;
+    public LinkConditionConfigValue getConfig(String id) {
+        return config.stream().filter(config -> config.getConfigId().equalsIgnoreCase(id)).findFirst().orElse(new LinkConditionConfigValue(this, id, null));
+    }
+
+    public void setConfig(String id, Serializable value) {
+        config.stream().filter(config -> config.getConfigId().equalsIgnoreCase(id)).findFirst().ifPresent(configValue -> config.remove(configValue));
+        config.add(new LinkConditionConfigValue(this, id, value));
     }
 
     public boolean isUnlocksLink() {

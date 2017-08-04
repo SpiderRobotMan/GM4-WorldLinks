@@ -9,7 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "link_travel")
 public class LinkTravel {
 
-    @DatabaseField(generatedId = true, id = true)
+    @DatabaseField(generatedId = true)
     private int id;
 
     @DatabaseField(foreign = true)
@@ -23,6 +23,8 @@ public class LinkTravel {
 
     @DatabaseField(foreign = true)
     private Link link;
+
+    LinkTravel(){}
 
     public LinkTravel(LinkPlayer player, String fromServer, String toServer, Link link) {
         this.player = player;

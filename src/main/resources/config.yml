@@ -10,25 +10,3 @@ database:
 
 selector:
     identifiable_lore: "World Selector"
-
-links:
-    1:
-        name: "example"
-        display: "Example Link"
-        server: "creative"
-        particle:
-            type: "REDSTONE"
-            data:
-                r: 0
-                g: 255
-                b: 0
-            location:
-                x: 3.0
-                y: 0.0
-                z: 1.0
-        type: "ABSOLUTE"
-        location:
-            world: 'world'
-            x: 3.0
-            y: 0.0
-            z: 1.0

@@ -86,7 +86,7 @@ public abstract class PagedGUI extends GUI {
             ItemMeta arrowMeta = arrow.getItemMeta();
             arrowMeta.setDisplayName(ChatColor.WHITE + "<- Previous Page");
             arrow.setItemMeta(arrowMeta);
-            this.inventory.setItem(internalSize + 3, arrow);
+            this.inventory.setItem(pageSize + 3, arrow);
         }
 
         if (page + 1 < pages) {
@@ -94,14 +94,14 @@ public abstract class PagedGUI extends GUI {
             ItemMeta arrowMeta = arrow.getItemMeta();
             arrowMeta.setDisplayName(ChatColor.WHITE + "Next Page ->");
             arrow.setItemMeta(arrowMeta);
-            this.inventory.setItem(internalSize + 5, arrow);
+            this.inventory.setItem(pageSize + 5, arrow);
         }
 
         ItemStack pageNumber = new ItemStack(Material.EMPTY_MAP);
         ItemMeta pageNumberMeta = pageNumber.getItemMeta();
         pageNumberMeta.setDisplayName(ChatColor.WHITE + "Page " + (page + 1) + "/" + pages);
         pageNumber.setItemMeta(pageNumberMeta);
-        this.inventory.setItem(internalSize + 4, pageNumber);
+        this.inventory.setItem(pageSize + 4, pageNumber);
 
         this.populateSpecial();
     }

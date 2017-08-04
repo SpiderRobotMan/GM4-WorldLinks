@@ -6,14 +6,13 @@ import com.j256.ormlite.field.DataPersisterManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import me.theminecoder.minecraft.worldlinks.commands.CreateLinkCommand;
+import me.theminecoder.minecraft.worldlinks.commands.DeleteLinkCommand;
 import me.theminecoder.minecraft.worldlinks.listeners.PlayerListener;
 import me.theminecoder.minecraft.worldlinks.managers.PlayerManager;
 import me.theminecoder.minecraft.worldlinks.managers.WorldManager;
-import me.theminecoder.minecraft.worldlinks.objects.Link;
-import me.theminecoder.minecraft.worldlinks.objects.LinkLocation;
-import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
-import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
-import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayerTask;
+import me.theminecoder.minecraft.worldlinks.objects.*;
+import me.theminecoder.minecraft.worldlinks.tasks.WorldLinkDisplayTask;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -63,6 +62,7 @@ public class WorldLinks extends JavaPlugin {
         try {
             JdbcConnectionSource source = new JdbcPooledConnectionSource("jdbc:mysql://"
                     + getConfig().getString("database.host", "127.0.0.1")
+                    + ":"
                     + getConfig().getString("database.port", "3306")
                     + "/"
                     + getConfig().getString("database.database", "test"),
@@ -72,8 +72,20 @@ public class WorldLinks extends JavaPlugin {
 
             DataPersisterManager.registerDataPersisters(LinkLocation.Persister.getInstance());
 
-            TableUtils.createTableIfNotExists(source, Link.class);
-            TableUtils.createTableIfNotExists(source, me.theminecoder.minecraft.worldlinks.objects.LinkPlayer.class);
+            Stream.of(
+                    Link.class,
+                    LinkCondition.class,
+                    LinkConditionConfigValue.class,
+                    LinkPlayer.class,
+                    LinkTravel.class,
+                    LinkUnlock.class
+            ).forEach(clazz -> {
+                try {
+                    TableUtils.createTableIfNotExists(source, clazz);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
             linkDao = DaoManager.createDao(source, Link.class);
             linkPlayerDao = DaoManager.createDao(source, LinkPlayer.class);
@@ -92,9 +104,12 @@ public class WorldLinks extends JavaPlugin {
                 new PlayerListener(this)
         ).forEach(listener -> this.getServer().getPluginManager().registerEvents(listener, this));
 
-        this.getServer().getScheduler().runTaskTimer(this, new WorldLinkDisplayerTask(this), 0, 0);
+        this.getServer().getScheduler().runTaskTimer(this, new WorldLinkDisplayTask(this), 0, 0);
 
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+
+        this.getCommand("createlink").setExecutor(new CreateLinkCommand());
+        this.getCommand("deletelink").setExecutor(new DeleteLinkCommand());
     }
 
     /**
@@ -132,16 +147,6 @@ public class WorldLinks extends JavaPlugin {
      */
     public LinkPlayer getPlayer(Player player) {
         return getPlayerManager().getPlayer(player);
-    }
-
-    /**
-     * Gets a LinkPlayer by their username.
-     *
-     * @param username The username
-     * @return LinkPlayer or null if not online
-     */
-    public LinkPlayer getPlayer(String username) {
-        return getPlayerManager().getPlayer(username);
     }
 
     public Dao<Link, String> getLinkDao() {

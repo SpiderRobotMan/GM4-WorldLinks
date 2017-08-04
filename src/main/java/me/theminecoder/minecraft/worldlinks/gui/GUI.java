@@ -90,6 +90,10 @@ public abstract class GUI {
     protected void onTickUpdate() {
     }
 
+    protected void onPlayerCloseInv(Player player) {
+        this.onPlayerCloseInv();
+    }
+
     protected void onPlayerCloseInv() {
     }
 
@@ -205,7 +209,7 @@ public abstract class GUI {
             if (bukkitInventory.getViewers().size() <= 1) {
                 HandlerList.unregisterAll(this);
                 try {
-                    gui.onPlayerCloseInv();
+                    gui.onPlayerCloseInv((Player) event.getPlayer());
                 } catch (Throwable e) {
                     this.gui.throwError(e);
                 }

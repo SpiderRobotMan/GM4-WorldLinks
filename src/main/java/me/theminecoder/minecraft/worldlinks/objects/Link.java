@@ -11,7 +11,7 @@ import me.theminecoder.minecraft.worldlinks.WorldLinks;
  * @author theminecoder
  */
 @DatabaseTable(tableName = "link_links")
-public class Link extends BaseDaoEnabled {
+public class Link extends BaseDaoEnabled<Link, String> {
 
     @DatabaseField(id = true)
     private String id;
@@ -32,12 +32,20 @@ public class Link extends BaseDaoEnabled {
     private LinkLocation location;
 
     @DatabaseField
-    private int particleAngle;
+    private int particleAngle = -1;
+
+//    @DatabaseField
+//    private LinkCondition discoveryCondition;
 
     @ForeignCollectionField(eager = true)
     private ForeignCollection<LinkCondition> conditions;
 
-    Link(){
+    Link() {
+    }
+
+    public Link(String id) {
+        this.id = id;
+        this.setDao(WorldLinks.getInstance().getLinkDao());
     }
 
     public Link(String id, String name, String server, String particle, LinkType linkType, LinkLocation location) {

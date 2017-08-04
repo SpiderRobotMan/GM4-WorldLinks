@@ -19,7 +19,7 @@ public class LocationUtils {
      */
     public static final ImmutableList<Material> UNSAFE_BLOCKS = ImmutableList.copyOf(Arrays.stream(Material.values()).filter(material -> {
         String name = material.name();
-        return (material.isTransparent() && !(name.contains("LEAVES") || material == Material.TORCH)) || name.startsWith("LAVA");
+        return (material.isTransparent() && !(name.contains("LEAVES") || material == Material.TORCH)) || name.endsWith("LAVA") || name.endsWith("WATER");
     }).collect(Collectors.toList()));
 
     /**

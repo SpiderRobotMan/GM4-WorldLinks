@@ -2,10 +2,7 @@ package me.theminecoder.minecraft.worldlinks.listeners;
 
 import com.google.common.collect.Range;
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
-import me.theminecoder.minecraft.worldlinks.objects.Link;
-import me.theminecoder.minecraft.worldlinks.objects.LinkLocation;
-import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
-import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
+import me.theminecoder.minecraft.worldlinks.objects.*;
 import me.theminecoder.minecraft.worldlinks.utils.ServerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -37,7 +34,7 @@ public class PlayerListener implements Listener {
     public void onLogin(AsyncPlayerPreLoginEvent event) {
         try {
             LinkPlayer player = plugin.getLinkPlayerDao().createIfNotExists(new LinkPlayer(event.getUniqueId()));
-            plugin.getPlayerManager().getPlayerMap().put(event.getName(), player);
+            plugin.getPlayerManager().getPlayerMap().put(event.getUniqueId(), player);
         } catch (Exception e) {
             e.printStackTrace();
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
@@ -50,10 +47,13 @@ public class PlayerListener implements Listener {
         final LinkPlayer player = plugin.getPlayerManager().getPlayer(event.getPlayer());
 
         Link activeLink = player.getActiveLink();
+        LinkLocation oldLocation = player.getOldLocation();
         if (activeLink == null) {
             return;
         }
+
         player.setActiveLink(null);
+        player.setOldLocation(null);
 
         // clear the data from the db in an async thread.
         new BukkitRunnable() {
@@ -66,8 +66,12 @@ public class PlayerListener implements Listener {
             }
         }.runTaskAsynchronously(plugin);
 
+        if(!activeLink.getServer().equalsIgnoreCase(plugin.getServerName())) {
+            return;
+        }
+
         // absolute means position them exactly where the coordinates state.
-        event.getPlayer().teleport(activeLink.getLinkType().getFixedLocation(player.getOldLocation().getBukkitLocation(), activeLink.getLocation().getBukkitLocation()));
+        event.getPlayer().teleport(activeLink.getLinkType().getFixedLocation(oldLocation.getBukkitLocation(), activeLink.getLocation().getBukkitLocation()));
     }
 
     @EventHandler
@@ -100,8 +104,8 @@ public class PlayerListener implements Listener {
         }
 
         //Loop through all unlocked links and try and find a match.
-        for (Link link : linkPlayer.getUnlockedLinks().stream().filter(link -> !link.getConditions().stream().anyMatch(linkCondition ->
-                !linkCondition.getType().valid(player, linkPlayer, linkCondition.getConfig())
+        for (Link link : linkPlayer.getUnlockedLinks().stream().map(LinkUnlock::getLink).filter(link -> link.getConditions().stream().allMatch(linkCondition ->
+                linkCondition.getType().valid(player, linkPlayer, linkCondition)
         )).collect(Collectors.toList())) {
             if (Range.closed(link.getParticleAngle() - 20, link.getParticleAngle() + 20).contains(new Float(player.getLocation().getYaw()).intValue())) {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {

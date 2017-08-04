@@ -1,27 +1,17 @@
 package me.theminecoder.minecraft.worldlinks.managers;
 
-import com.google.common.collect.Range;
 import me.theminecoder.minecraft.worldlinks.WorldLinks;
 import me.theminecoder.minecraft.worldlinks.objects.Link;
-import me.theminecoder.minecraft.worldlinks.objects.LinkPlayer;
-import me.theminecoder.minecraft.worldlinks.objects.LinkTravel;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class WorldManager implements Listener {
 
@@ -38,49 +28,19 @@ public class WorldManager implements Listener {
      */
     public WorldManager(WorldLinks plugin) {
         this.plugin = plugin;
-        this.loadWorldLinks();
+        try {
+            this.reloadWorldLinks();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Loads the world links from the configuration.
      */
-    public void loadWorldLinks() {
-        ConfigurationSection linkConfig = plugin.getConfig().getConfigurationSection("links");
-
-        //Check that there are valid links to process.
-        if (linkConfig == null || linkConfig.getKeys(false).isEmpty()) {
-            plugin.getLogger().info("No world links were found in the configuration.");
-            return;
-        }
-
-        //Loop through each link found and process it.
-        for (String key : linkConfig.getKeys(false)) {
-            if (!linkConfig.isConfigurationSection(key)) {
-                plugin.getLogger().info("Failed to load link with ID '" + key + "': Not a configuration section.");
-                continue;
-            }
-
-            Link link = null;
-
-//            try {
-//                link = new Link(linkConfig.getConfigurationSection(key));
-//            } catch (InvalidConfigurationException e) {
-//                plugin.getLogger().info("Failed to load link with ID '" + key + "': " + e.getMessage());
-//                continue;
-//            }
-
-//            //Prevent two links with the same name being registered.
-//            if (getWorldLink(link.getName()) != null) {
-//                plugin.getLogger().info("Failed to load link with ID '" + key + "': A link with the name '" + link.getName() + "' already exists.");
-//                continue;
-//            }
-
-//            worldLinks.add(link);
-//            plugin.getLogger().info("Successfully loaded link: " + link.getName());
-        }
-
-        plugin.getLogger().info("Finished loading links.");
-        plugin.getLogger().info("A total of " + worldLinks.size() + " links were loaded.");
+    public void reloadWorldLinks() throws SQLException {
+        this.worldLinks = plugin.getLinkDao().queryForAll();
+        plugin.getLogger().info("Loaded " + this.worldLinks.size() + " links!");
     }
 
     /**
@@ -95,12 +55,12 @@ public class WorldManager implements Listener {
     /**
      * Gets a registered world link by its name.
      *
-     * @param name The name
+     * @param id The ID
      * @return A link, or null if not found
      */
-    public Link getWorldLink(String name) {
+    public Link getWorldLink(String id) {
         for (Link link : getWorldLinks()) {
-            if (link.getName().equalsIgnoreCase(name)) {
+            if (link.getId().equalsIgnoreCase(id)) {
                 return link;
             }
         }
