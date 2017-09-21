@@ -76,6 +76,7 @@ public class PlayerListener implements Listener {
         }
 
         LinkPlayer linkPlayer = queuedJoin.getLinkPlayer();
+        linkPlayer.setPlayer(event.getPlayer());
 
         WorldLink.get().getPlayerManager().addPlayer(linkPlayer);
 

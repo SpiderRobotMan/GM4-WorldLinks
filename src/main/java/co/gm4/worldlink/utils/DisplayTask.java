@@ -11,8 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -64,7 +66,7 @@ public class DisplayTask implements Listener, Runnable {
                             player.sendTitle("", ChatColor.AQUA + worlds.get(i).getName(), 0, 4, 2);
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent((found ? ChatColor.YELLOW + "Right click to travel" : ChatColor.RED + "Unable to travel from this location")));
                             if (hoverParticle != null)
-                                player.spawnParticle(hoverParticle, player.getEyeLocation().clone().add(point), hoverCount, point.getX(), 0.0, point.getZ(), hoverSpeed);
+                                player.spawnParticle(hoverParticle, player.getEyeLocation().clone().add(point), hoverCount, 0.0, 0.0, 0.0, hoverSpeed);
                         }
                     }
                 }
@@ -72,14 +74,16 @@ public class DisplayTask implements Listener, Runnable {
         }
     }
 
+    private BukkitTask playerLeftTask;
+
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
 
-        if (!PlayerUtils.isViewingLinks(event.getPlayer())) return;
+        if (linkPlayer.isGettingTransferred() || event.getHand() == EquipmentSlot.OFF_HAND || !PlayerUtils.isViewingLinks(event.getPlayer())) return;
 
         if (event.getAction().name().contains("RIGHT_CLICK")) {
-            LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
             List<LinkWorld> worlds = linkPlayer.getFilteredWorlds();
 
             for (int i = 0; i < worlds.size(); i++) {
@@ -90,6 +94,7 @@ public class DisplayTask implements Listener, Runnable {
 
                     for (Link link : WorldLink.get().getPluginConfig().getLinks()) {
                         if (link.getName().equals(worlds.get(i).getName())) {
+                            linkPlayer.setGettingTransferred(true);
                             event.setCancelled(true);
 
                             int I = i;
@@ -113,8 +118,12 @@ public class DisplayTask implements Listener, Runnable {
                             if (link.isZoomOnClick()) player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 255));
                             WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
                             ServerUtils.sendToServer(player, link.getName());
-                            new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-
+                            playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
+                                if (!player.isOnline()) {
+                                    new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
+                                    playerLeftTask.cancel();
+                                }
+                            }, 3L, 3L);
                             break;
                         }
                     }
@@ -124,6 +133,6 @@ public class DisplayTask implements Listener, Runnable {
     }
 
     private boolean runCommand(Link link, LinkWorld linkWorld, LinkPlayer linkPlayer, String command) {
-        return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", Bukkit.getPlayer(linkPlayer.getUuid()).getName()).replace("%world%", linkWorld.getName()));
+        return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", linkPlayer.getPlayer().getName()).replace("%world%", linkWorld.getName()));
     }
 }

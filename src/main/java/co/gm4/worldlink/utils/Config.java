@@ -55,7 +55,7 @@ public class Config {
 
             if (config.getString("links." + s + ".triggers.advancement", null) != null) {
                 link.setUnlockAdvancementKey(config.getString("links." + s + ".triggers.advancement", null));
-                WorldLink.get().getModules().add(new Advancement());
+                if (WorldLink.get().getModules().stream().noneMatch(module -> module instanceof Advancement)) WorldLink.get().getModules().add(new Advancement());
             }
 
             if (config.getConfigurationSection("links." + s + ".display_conditions") != null) {

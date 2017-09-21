@@ -3,6 +3,7 @@ package co.gm4.worldlink.objects;
 import co.gm4.worldlink.modules.display.Filter;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,8 @@ public class LinkPlayer {
     @Setter private LinkPlayerData playerData;
     @Setter private List<LinkWorld> worlds;
 
+    @Setter private Player player;
+    @Setter private boolean gettingTransferred;
     @Setter private LinkLocationType locationType;
 
     public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds) {

@@ -49,6 +49,7 @@ links:
     display_conditions:
 
       # Advancements required to see the link
+      # Can be left untouched if nothing is required
       advancements:
         - "name/space_here"
 
