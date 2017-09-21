@@ -6,9 +6,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +17,6 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by MatrixTunnel on 9/12/2017.
@@ -87,21 +84,11 @@ public class DisplayTask implements Listener {
 
         if (event.getAction().name().contains("RIGHT_CLICK")) {
             LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
-
-            List<LinkWorld> worlds = linkPlayer.getFilteredWorlds(); //
-
-            //WorldLink.get().getPluginConfig().getLinks().forEach(link -> {
-            //    linkPlayer.getWorlds().stream().filter(linkWorld -> link.getName().equals(linkWorld.getName())).findAny().ifPresent(linkWorld -> {
-            //
-            //    });
-            //});
-
+            List<LinkWorld> worlds = linkPlayer.getFilteredWorlds();
 
             for (int i = 0; i < worlds.size(); i++) {
                 double angle = (2 * Math.PI * i / worlds.size());
                 Vector point = new Vector(Math.cos(angle) * 1, -0.4, Math.sin(angle) * 1);
-
-                //player.spawnParticle(Particle.FLAME, player.getEyeLocation().clone().add(point), 1, 0.0, 0.0, 0.0, 0);
 
                 if (player.getLocation().getDirection().distance(point) < 0.17) {
 
@@ -122,8 +109,6 @@ public class DisplayTask implements Listener {
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setPlayerData(playerData);
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
 
-                            // effects
-                            //player.sendMessage(ChatColor.YELLOW + "Traveling to (" + i + ") " + ChatColor.AQUA + worlds.get(i).getName());
                             new ArrayList<>(link.getDuringCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
 
                             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15));
@@ -137,8 +122,6 @@ public class DisplayTask implements Listener {
                             break;
                         }
                     }
-
-                    //WorldLink.get().getPluginConfig().getLinks().stream().filter(link -> link.getName().equals(worlds.get(I).getName())).findFirst().ifPresent(link -> {
                 }
             }
         }

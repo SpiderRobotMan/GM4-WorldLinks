@@ -48,8 +48,8 @@ public enum LinkLocationType {
         }
     };
 
-    int maxRadius;
-    int maxYRadius;
+    private int maxRadius;
+    private int maxYRadius;
 
     /**
      * Gets a link type by its name from the config.

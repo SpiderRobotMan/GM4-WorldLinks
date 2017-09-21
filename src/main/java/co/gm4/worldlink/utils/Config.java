@@ -8,13 +8,11 @@ import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -88,7 +86,6 @@ public class Config {
                 float yaw = ((Double) config.getDouble("links." + s + ".teleportation.location.yaw", 0)).floatValue();
                 float pitch = ((Double) config.getDouble("links." + s + ".teleportation.location.pitch", 0)).floatValue();
                 LinkLocation linkLocation = new LinkLocation(world, x, y, z, yaw, pitch);
-                printConfigurationSerializable(linkLocation);
                 linkLocation.setIgnoreYaw(!config.contains("links." + s + ".teleportation.location.yaw"));
                 linkLocation.setIgnorePitch(!config.contains("links." + s + ".teleportation.location.pitch"));
                 link.setTargetLocation(linkLocation);
@@ -124,12 +121,4 @@ public class Config {
         return selectorItemHasToMatch;
     }
 
-
-    public void printConfigurationSerializable(ConfigurationSerializable configurationSerializable){
-        Map<String, Object> map = configurationSerializable.serialize();
-        for (String key : map.keySet()){
-            Object value = map.get(key);
-            System.out.println(key + ": " + value + " | " + value.getClass());
-        }
-    }
 }

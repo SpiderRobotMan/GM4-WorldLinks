@@ -16,9 +16,9 @@ import java.util.Map;
 @Getter @Setter
 public class LinkLocation implements ConfigurationSerializable {
 
-    String world;
-    double x, y, z;
-    float yaw, pitch;
+    private String world;
+    private double x, y, z;
+    private float yaw, pitch;
 
     boolean ignoreYaw, ignorePitch;
 
