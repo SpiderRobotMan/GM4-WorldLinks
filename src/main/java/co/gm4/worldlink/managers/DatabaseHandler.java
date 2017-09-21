@@ -53,8 +53,8 @@ public class DatabaseHandler {
     }
 
     public void init() {
-        update("CREATE TABLE IF NOT EXISTS `link_players` (`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, `uuid` VARCHAR(36), `playerdata` VARCHAR(20400) NULL DEFAULT NULL, `teleportType` VARCHAR(100) NULL DEFAULT NULL, `unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL);");
-        update("SET GLOBAL max_allowed_packet = 65536;"); // 1024 * 64
+        update("CREATE TABLE IF NOT EXISTS `link_players` (`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, `uuid` VARCHAR(36), `playerdata` BLOB(65535) NULL DEFAULT NULL, `teleportType` VARCHAR(100) NULL DEFAULT NULL, `unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL);");
+        // This MySQL user will not have perms for this: update("SET GLOBAL max_allowed_packet = 65535;"); // 1024 * 64
     }
 
     public LinkPlayer getLinkPlayer(UUID uuid) {
