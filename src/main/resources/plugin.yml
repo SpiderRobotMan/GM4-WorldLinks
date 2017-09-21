@@ -1,7 +1,4 @@
-name: WorldLinks
-version: 1.0
-author: theminecoder
-main: me.theminecoder.minecraft.worldlinks.WorldLinks
-commands:
-  createlink: {}
-  deletelink: {}
+name: WorldLink
+version: ${project.version}
+main: co.gm4.worldlink.WorldLink
+authors: [theminecoder, MatrixTunnel]

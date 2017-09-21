@@ -1,12 +1,137 @@
-server:
-    name: "lobby1"
 
-database:
+# Settings used for the server link
+server:
+
+  # Name of the server
+  # Use what's normally allowed in Minecraft names for this (Regex: '[a-zA-Z0-9_]{1,16}')
+  name: "world1"
+
+  # TODO Add arrival particle effect (plays at the player when they arrive)
+  # TODO Add arrival commands (same concept as above)
+
+  # Database settings used for.... a database?
+  database:
     host: "127.0.0.1"
     port: "3306"
     database: "default"
     username: "admin"
     password: ""
 
-selector:
-    identifiable_lore: "World Selector"
+  # Settings used for the server selector
+  selector:
+
+    # List: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+    material: "STICK"
+
+    # Does the item have to match the data listed below?
+    exact_match: false
+
+    # Display name of the item (allows color codes)
+    display_name: "World Selector"
+
+    # Lore of the item (also allows for color codes)
+    lore: "Selector of worlds!"
+
+# Other worlds that players can travel to from this world
+links:
+
+  # Name of the world the player can teleport to
+  name_of_other_world:
+
+    # Triggers used for unlocking the world
+    triggers:
+
+      # Advancement trigger used to unlock world
+      # The link will be unlocked and added to the player once this advancement is completed
+      advancement: "name/space_here"
+
+    # Displays the link in the menu only if these conditions are met
+    display_conditions:
+
+      # Advancements required to see the link
+      advancements:
+        - "name/space_here"
+
+      # TODO
+      on_block: "dirt"
+
+      # TODO 5-10 or >5 or =7
+      health: "5"
+
+      # TODO like health
+      hunger: "14"
+
+      # TODO day, night, int_values, etc.
+      time:
+
+    # Effects of the world particle
+    effects:
+
+      # Zoom in on click (adds slowness)
+      zoom: true
+
+      # Play portal sound on click TODO
+      sound: true
+
+      # -----
+      # Add further customization with "before" commands if you want to add other stuff on click (located under teleportation)
+      # -----
+
+      # Particles that will show for the world particle
+      particles:
+
+        # The particle that will display when holding the selection tool
+        # TODO Add `offset: "0.0, 0.0, 0.0"` later for colors with red dust
+        display:
+
+          type: "FLAME"
+          speed: 0
+          count: 1
+
+        # The particle that will display when hovering over the world particle
+        # Note: offset can't be added here due to how it displays (will be changed later)
+        hover:
+
+          type: "PORTAL"
+          speed: 0
+          count: 1
+
+    # Events that will take place when teleporting to the other world
+    teleportation:
+
+      # The type of teleportation that will take place
+      type: "ABSOLUTE"
+
+      # The location in the other world
+      # TODO Add stuff explaining R and S values
+      location:
+
+        world: "world"
+        x: 100.0
+        y: 62.0
+        z: -100.0
+
+        #Optional
+        yaw: 0
+
+        #Optional
+        pitch: 0
+
+      # Commands run when the teleportation takes place
+      # %player% = player's name
+      # %world% = the world's name they are teleporting to
+      #
+      # Commands also accept color codes (&7 = gray)
+      commands:
+
+        before:
+          - "say Sending %player% to %world%"
+
+        during:
+          - "say %player% is about to go bye bye!"
+
+        # Note: Do not execute off player as they have already left the server
+        after:
+          - "say %player% has gone to %world% :("
+
+

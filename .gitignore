@@ -1,4 +1,6 @@
-*.iml
-/.idea
-/target
-*-pom.xml
+
+# IntelliJ files
+/.idea/
+/target/
+worldlink.iml
+/dependency-reduced-pom.xml
