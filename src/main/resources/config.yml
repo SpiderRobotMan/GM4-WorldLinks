@@ -53,6 +53,9 @@ links:
         - "name/space_here"
 
       # TODO
+      holding: "STONE"
+
+      # TODO
       on_block: "dirt"
 
       # TODO 5-10 or >5 or =7

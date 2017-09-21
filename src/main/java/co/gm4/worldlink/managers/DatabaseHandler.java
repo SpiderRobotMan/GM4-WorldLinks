@@ -8,6 +8,7 @@ import co.gm4.worldlink.objects.LinkWorld;
 import co.gm4.worldlink.utils.Config;
 import com.google.gson.Gson;
 import com.huskehhh.mysql.mysql.MySQL;
+import lombok.Getter;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,6 +22,7 @@ import java.util.UUID;
 /**
  * Created by MatrixTunnel on 9/10/2017.
  */
+@Getter
 public class DatabaseHandler {
 
     private MySQL mySQL;

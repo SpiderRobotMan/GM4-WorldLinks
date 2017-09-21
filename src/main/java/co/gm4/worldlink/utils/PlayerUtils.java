@@ -39,6 +39,7 @@ public class PlayerUtils {
 
             try {
                 resetPlayer(player);
+                player.setGameMode(data.getGamemode());
 
                 if (locationType != null) {
                     if (locationType.isSafe()) {
@@ -50,7 +51,7 @@ public class PlayerUtils {
                 } else {
                     player.teleport(data.getLocation());
                 }
-                player.setGameMode(data.getGamemode());
+
                 player.setVelocity(data.getVelocity());
                 player.getInventory().setContents(data.getInventory());
                 player.getEnderChest().setContents(data.getEnderChest());
@@ -96,7 +97,11 @@ public class PlayerUtils {
             player.setLevel(0);
             player.setExp(0);
 
-            player.getActivePotionEffects().stream().findAny().ifPresent(potionEffect -> player.removePotionEffect(potionEffect.getType()));
+            player.getActivePotionEffects().forEach(potionEffect -> {
+                try {
+                    player.removePotionEffect(potionEffect.getType());
+                } catch (NullPointerException ignored) {}
+            });
         }
     }
 

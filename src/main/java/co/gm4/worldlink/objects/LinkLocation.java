@@ -22,7 +22,7 @@ public class LinkLocation implements ConfigurationSerializable {
 
     boolean ignoreYaw, ignorePitch;
 
-    public LinkLocation(String world, double x, double y, double z, float yaw, float  pitch){
+    public LinkLocation(String world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -31,14 +31,14 @@ public class LinkLocation implements ConfigurationSerializable {
         this.pitch = pitch;
     }
 
-    public LinkLocation(String world, double x, double y, double z){
+    public LinkLocation(String world, double x, double y, double z) {
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public LinkLocation(World world, double x, double y, double z, float yaw, float  pitch){
+    public LinkLocation(World world, double x, double y, double z, float yaw, float pitch) {
         this.world = world.getName();
         this.x = x;
         this.y = y;
@@ -47,15 +47,15 @@ public class LinkLocation implements ConfigurationSerializable {
         this.pitch = pitch;
     }
 
-    public LinkLocation(World world, double x, double y, double z){
+    public LinkLocation(World world, double x, double y, double z) {
         this.world = world.getName();
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public LinkLocation(Location location){
-        if (location.getWorld() == null){
+    public LinkLocation(Location location) {
+        if (location.getWorld() == null) {
             location.setWorld(Bukkit.getWorlds().get(0));
         }
         this.world = location.getWorld().getName();
@@ -66,21 +66,21 @@ public class LinkLocation implements ConfigurationSerializable {
         this.pitch = location.getPitch();
     }
 
-    public Location getLocation(){
+    public Location getLocation() {
         World world = Bukkit.getWorld(this.world);
         if (world == null) world = Bukkit.getWorlds().get(0);
         return new Location(world, x, y, z, yaw, pitch);
     }
 
-    public LinkLocation add(double x, double y, double z){
-        this.x += x;
-        this.y += y;
-        this.z += z;
-        return this;
+    public LinkLocation add(double x, double y, double z) {
+        LinkLocation linkLocation = new LinkLocation(world, this.x + x, this.y + y, this.z + z, yaw, pitch);
+        linkLocation.setIgnoreYaw(this.ignoreYaw);
+        linkLocation.setIgnorePitch(this.ignorePitch);
+        return linkLocation;
     }
 
     @Override
-    public Map<String, Object> serialize(){
+    public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put("world", world);
         map.put("x", x);
@@ -91,11 +91,11 @@ public class LinkLocation implements ConfigurationSerializable {
         return map;
     }
 
-    public static LinkLocation deserialize(Map<String, Object> map){
+    public static LinkLocation deserialize(Map<String, Object> map) {
         return new LinkLocation((String) map.get("world"), (Double) map.get("x"), (Double) map.get("y"), (Double) map.get("z"), (Float) map.get("yaw"), (Float) map.get("pitch"));
     }
 
-    public Location getAsLocation(){
+    public Location getAsLocation() {
         World world = Bukkit.getWorld(getWorld());
         if (world == null) return null;
         return new Location(world, x, y, z, yaw, pitch);

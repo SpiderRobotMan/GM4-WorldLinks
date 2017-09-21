@@ -18,12 +18,18 @@ public class Advancement extends Module implements Listener {
         WorldLink.get().getPluginConfig().getLinks().forEach(link -> {
             if (event.getAdvancement().getKey().getKey().equals(link.getUnlockAdvancementKey())) {
                 LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer().getUniqueId());
-                LinkWorld linkWorld = new LinkWorld(link.getName());
 
-                if (!linkPlayer.getWorlds().contains(linkWorld)) {
-                    linkPlayer.getWorlds().add(linkWorld);
-                    //TODO message
+                //TODO Make this more clean (just needed it working)
+                boolean found = false;
+
+                for (LinkWorld lWorld : linkPlayer.getWorlds()) {
+                    if (lWorld.getName().equals(link.getName())) {
+                        found = true;
+                        break;
+                    }
                 }
+
+                if (!found) linkPlayer.getWorlds().add(new LinkWorld(link.getName()));
             }
         });
     }

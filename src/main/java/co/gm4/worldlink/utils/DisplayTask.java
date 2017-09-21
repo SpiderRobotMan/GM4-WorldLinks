@@ -21,59 +21,55 @@ import java.util.List;
 /**
  * Created by MatrixTunnel on 9/12/2017.
  */
-public class DisplayTask implements Listener {
+public class DisplayTask implements Listener, Runnable {
 
+    @Override
     public void run() {
-        Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (PlayerUtils.isViewingLinks(player)) {
-                    LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (PlayerUtils.isViewingLinks(player)) {
+                LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
 
-                    if (linkPlayer == null) continue;
+                if (linkPlayer == null) continue;
 
-                    List<LinkWorld> worlds = linkPlayer.getFilteredWorlds();
+                List<LinkWorld> worlds = linkPlayer.getFilteredWorlds();
 
-                    if (worlds.size() > 0) {
-                        for (int i = 0; i < worlds.size(); i++) {
-                            double angle = (2 * Math.PI * i / worlds.size());
-                            Vector point = new Vector(Math.cos(angle) * 1, -0.4, Math.sin(angle) * 1);
+                if (worlds.size() > 0) {
+                    for (int i = 0; i < worlds.size(); i++) {
+                        double angle = (2 * Math.PI * i / worlds.size());
+                        Vector point = new Vector(Math.cos(angle) * 1, -0.4, Math.sin(angle) * 1);
 
-                            boolean found = false;
-                            Particle hoverParticle = null;
-                            int hoverSpeed = 1;
-                            int hoverCount = 0;
+                        boolean found = false;
+                        Particle hoverParticle = null;
+                        int hoverSpeed = 1;
+                        int hoverCount = 0;
 
-                            for (Link link : WorldLink.get().getPluginConfig().getLinks()) {
-                                if (link.getName().equals(worlds.get(i).getName())) {
-                                    found = true;
-
-                                    player.spawnParticle(Particle.valueOf(link.getDisplayType()), player.getEyeLocation().clone().add(point), link.getDisplayCount(), 0.0, 0.0, 0.0, link.getDisplaySpeed());
-                                    if (link.getHoverType() != null) {
-                                        hoverParticle = Particle.valueOf(link.getHoverType());
-                                        hoverCount = link.getHoverCount();
-                                        hoverSpeed = link.getHoverSpeed();
-                                    }
-                                    break;
+                        for (Link link : WorldLink.get().getPluginConfig().getLinks()) {
+                            if (link.getName().equals(worlds.get(i).getName())) {
+                                found = true;
+                                player.spawnParticle(Particle.valueOf(link.getDisplayType()), player.getEyeLocation().clone().add(point), link.getDisplayCount(), 0.0, 0.0, 0.0, link.getDisplaySpeed());
+                                if (link.getHoverType() != null) {
+                                    hoverParticle = Particle.valueOf(link.getHoverType());
+                                    hoverCount = link.getHoverCount();
+                                    hoverSpeed = link.getHoverSpeed();
                                 }
+                                break;
                             }
+                        }
 
-                            if (!found) {
-                                player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation().clone().add(point), 1, 0.0, 0.0, 0.0, 0);
-                            }
+                        if (!found) {
+                            player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation().clone().add(point), 1, 0.0, 0.0, 0.0, 0);
+                        }
 
-
-                            if (player.getLocation().getDirection().distance(point) < 0.17) {
-                                player.sendTitle("", ChatColor.AQUA + worlds.get(i).getName(), 0, 4, 2);
-                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent((found ? ChatColor.YELLOW + "Right click to travel" : ChatColor.RED + "Unable to travel from this location")));
-
-                                if (hoverParticle != null)
-                                    player.spawnParticle(hoverParticle, player.getEyeLocation().clone().add(point), hoverCount, point.getX(), 0.0, point.getZ(), hoverSpeed);
-                            }
+                        if (player.getLocation().getDirection().distance(point) < 0.17) {
+                            player.sendTitle("", ChatColor.AQUA + worlds.get(i).getName(), 0, 4, 2);
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent((found ? ChatColor.YELLOW + "Right click to travel" : ChatColor.RED + "Unable to travel from this location")));
+                            if (hoverParticle != null)
+                                player.spawnParticle(hoverParticle, player.getEyeLocation().clone().add(point), hoverCount, point.getX(), 0.0, point.getZ(), hoverSpeed);
                         }
                     }
                 }
             }
-        }, 0L, 3L);
+        }
     }
 
     @EventHandler
@@ -94,15 +90,16 @@ public class DisplayTask implements Listener {
 
                     for (Link link : WorldLink.get().getPluginConfig().getLinks()) {
                         if (link.getName().equals(worlds.get(i).getName())) {
+                            event.setCancelled(true);
+
                             int I = i;
                             new ArrayList<>(link.getBeforeCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
                             LinkPlayerData playerData = new LinkPlayerData(player);
 
                             LinkLocationType locationType = LinkLocationType.getByConfigName(link.getTeleportType());
-                            LinkLocation targetLocation = link.getTargetLocation();
 
                             if (locationType != null) {
-                                playerData.setLocation(locationType.getFixedLocation(LinkLocation.deserialize(event.getPlayer().getLocation().serialize()), targetLocation));
+                                playerData.setLocation(locationType.getFixedLocation(LinkLocation.deserialize(event.getPlayer().getLocation().serialize()), link.getTargetLocation()));
                                 WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
                             }
 
@@ -110,7 +107,6 @@ public class DisplayTask implements Listener {
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
 
                             new ArrayList<>(link.getDuringCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-
                             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15));
 
                             //TODO Fix

@@ -11,7 +11,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +26,11 @@ public final class WorldLink extends JavaPlugin {
     private List<Module> modules;
 
     private Config pluginConfig;
+
     private DisplayTask displayTask;
+    private BukkitTask displayTaskRunnable;
     private PlayerManager playerManager;
     private DatabaseHandler databaseHandler;
-
-
 
     @Override
     public void onEnable() {
@@ -36,32 +38,49 @@ public final class WorldLink extends JavaPlugin {
 
         modules = new ArrayList<>();
 
+        init();
+
+        playerManager = new PlayerManager();
+
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
+    }
+
+    private void init() {
         pluginConfig = new Config();
         serverName = pluginConfig.getServerName();
 
         Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
-        displayTask.run();
+        displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
 
-        playerManager = new PlayerManager();
         databaseHandler = new DatabaseHandler();
 
-        modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module,  this));
-
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
+        modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
 
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+    }
 
+    public void reload() {
+        onDisable();
+
+        init();
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getOnlinePlayers().forEach(player -> WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId()));
+        Bukkit.getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
+
+        displayTaskRunnable.cancel();
+
+        Bukkit.getOnlinePlayers().forEach(player -> databaseHandler.savePlayer(player.getUniqueId()));
+
+        try {
+            databaseHandler.getConnection().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         modules.forEach(module -> HandlerList.unregisterAll((Listener) module));
-    }
-
-    public void reload() {
-        pluginConfig = new Config();
+        modules.clear();
     }
 
     public static WorldLink get() {
