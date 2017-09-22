@@ -76,6 +76,8 @@ public final class WorldLink extends JavaPlugin {
 
         Bukkit.getOnlinePlayers().forEach(player -> databaseHandler.savePlayer(player.getUniqueId()));
 
+        databaseHandler.getHikari().close();
+
         modules.forEach(module -> HandlerList.unregisterAll((Listener) module));
         modules.clear();
     }
