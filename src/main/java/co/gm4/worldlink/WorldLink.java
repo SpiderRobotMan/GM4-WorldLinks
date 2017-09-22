@@ -6,16 +6,14 @@ import co.gm4.worldlink.managers.PlayerManager;
 import co.gm4.worldlink.modules.Module;
 import co.gm4.worldlink.utils.Config;
 import co.gm4.worldlink.utils.DisplayTask;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public final class WorldLink extends JavaPlugin {
@@ -52,7 +50,12 @@ public final class WorldLink extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
         displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
 
-        databaseHandler = new DatabaseHandler();
+        databaseHandler = new DatabaseHandler(
+            pluginConfig.getDatabaseHost(),
+            pluginConfig.getDatabaseDatabase(),
+            pluginConfig.getDatabaseUsername(),
+            pluginConfig.getDatabasePassword()
+        );
 
         modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
 
@@ -73,11 +76,7 @@ public final class WorldLink extends JavaPlugin {
 
         Bukkit.getOnlinePlayers().forEach(player -> databaseHandler.savePlayer(player.getUniqueId()));
 
-        try {
-            databaseHandler.getConnection().close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        databaseHandler.getHikari().close();
 
         modules.forEach(module -> HandlerList.unregisterAll((Listener) module));
         modules.clear();
