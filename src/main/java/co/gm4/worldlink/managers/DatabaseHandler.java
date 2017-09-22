@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -130,17 +131,17 @@ public class DatabaseHandler {
             if(linkPlayer.getPlayerData() != null && !linkPlayer.getPlayerData().getAsJson().isEmpty()) {
                 ps.setString(1, linkPlayer.getPlayerData().getAsJson());
             } else {
-                ps.setString(1, "NULL");
+                ps.setNull(1, Types.BLOB);
             }
             if(linkPlayer.getLocationType() != null && !linkPlayer.getLocationType().name().isEmpty()) {
                 ps.setString(2, linkPlayer.getLocationType().name());
             } else {
-                ps.setString(2, "NULL");
+                ps.setNull(2, Types.VARCHAR);
             }
             if(worlds != null && !worlds.isEmpty()) {
                 ps.setString(3, worlds);
             } else {
-                ps.setString(3, "NULL");
+                ps.setNull(3, Types.VARCHAR);
             }
             ps.setString(4, uuid.toString());
 
@@ -164,7 +165,7 @@ public class DatabaseHandler {
             if(worlds != null && !worlds.isEmpty()) {
                 ps.setString(1, worlds);
             } else {
-                ps.setString(1, "NULL");
+                ps.setNull(1, Types.VARCHAR);
             }
             ps.setString(2, uuid.toString());
 
