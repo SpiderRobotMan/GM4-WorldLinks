@@ -5,12 +5,10 @@ import co.gm4.worldlink.objects.LinkLocationType;
 import co.gm4.worldlink.objects.LinkPlayer;
 import co.gm4.worldlink.objects.LinkPlayerData;
 import co.gm4.worldlink.objects.LinkWorld;
-import co.gm4.worldlink.utils.Config;
 import com.google.gson.Gson;
-import com.huskehhh.mysql.mysql.MySQL;
-import lombok.Getter;
-
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -18,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -25,41 +24,64 @@ import java.util.UUID;
 @Getter
 public class DatabaseHandler {
 
-    private MySQL mySQL;
-    private Connection connection;
-    private Statement statement;
+    private String host;
+    private String database;
+    private String username;
+    private String password;
+    private HikariDataSource hikari;
 
-    public DatabaseHandler() {
-        Config config = WorldLink.get().getPluginConfig();
+    public DatabaseHandler(String host, String database, String username, String password) {
+        this.host = host;
+        this.database = database;
+        this.username = username;
+        this.password = password;
 
-        mySQL = new MySQL(
-                config.getDatabaseHost(),
-                config.getDatabasePort(),
-                config.getDatabaseDatabase(),
-                config.getDatabaseUsername(),
-                config.getDatabasePassword()
-        );
-
-        try {
-            connection = mySQL.openConnection();
-            statement = connection.createStatement();
-        } catch (Exception e) {
-            WorldLink.get().getLogger().warning("Could not establish connection with the database");
-            e.printStackTrace();
-            WorldLink.get().getPluginLoader().disablePlugin(WorldLink.get());
-            return;
-        }
         init();
     }
 
     public void init() {
-        update("CREATE TABLE IF NOT EXISTS `link_players` (`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, `uuid` VARCHAR(36), `playerdata` BLOB(65535) NULL DEFAULT NULL, `teleportType` VARCHAR(100) NULL DEFAULT NULL, `unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL);");
-        // This MySQL user will not have perms for this: update("SET GLOBAL max_allowed_packet = 65535;"); // 1024 * 64
+        this.hikari = new HikariDataSource();
+
+        this.getHikari().setMaximumPoolSize(10);
+        this.getHikari().setDataSourceClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
+        this.getHikari().addDataSourceProperty("serverName", this.getHost());
+        this.getHikari().addDataSourceProperty("port", "3306");
+        this.getHikari().addDataSourceProperty("databaseName", this.getDatabase());
+        this.getHikari().addDataSourceProperty("user", this.getUsername());
+        this.getHikari().addDataSourceProperty("password", this.getPassword());
+
+        try {
+            Connection connection = this.getHikari().getConnection();
+            Statement statement = connection.createStatement();
+
+            statement.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS `link_players` "
+                + "("
+                + "`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+                + "`uuid` VARCHAR(36), "
+                + "`playerdata` BLOB(65535) NULL DEFAULT NULL, "
+                + "`teleportType` VARCHAR(100) NULL DEFAULT NULL, "
+                + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL"
+                + ");");
+            // This MySQL user will not have perms for this: "SET GLOBAL max_allowed_packet = 65535;" // 1024 * 64
+
+            statement.close();
+            connection.close();
+        } catch(SQLException e) {
+            WorldLink.get().getLogger().warning("Could not establish connection with the database");
+            e.printStackTrace();
+            WorldLink.get().getPluginLoader().disablePlugin(WorldLink.get());
+        }
     }
 
     public LinkPlayer getLinkPlayer(UUID uuid) {
-        ResultSet res = query("SELECT * FROM `link_players` WHERE `uuid`='" + uuid.toString() + "'");
         try {
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `link_players` WHERE `uuid`=?;");
+            ps.setString(1, uuid.toString());
+
+            ResultSet res = ps.executeQuery();
+
             res.next();
 
             String playerdata = res.getString(3);
@@ -74,6 +96,10 @@ public class DatabaseHandler {
                 linkPlayer.setLocationType(locationType);
             }
 
+            ps.close();
+            res.close();
+            connection.close();
+
             return linkPlayer;
         } catch (SQLException e) {
             return null;
@@ -81,50 +107,91 @@ public class DatabaseHandler {
     }
 
     public void registerPlayer(UUID uuid) {
-        update("INSERT INTO `link_players`(`uuid`) VALUES ('" + uuid.toString() + "')");
+        try {
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO `link_players`(`uuid`) VALUES (?);");
+            ps.setString(1, uuid.toString());
+
+            ps.executeUpdate();
+            ps.close();
+            connection.close();
+        } catch(SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to register player: " + uuid.toString());
+        }
     }
 
     public void savePlayer(UUID uuid) {
-        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
-        String worlds = worldsToString(uuid);
-        update("UPDATE `link_players` SET `playerdata`=" + (linkPlayer.getPlayerData() == null ? "NULL" : "'" + linkPlayer.getPlayerData().getAsJson() + "'") + ",`teleportType`=" + (linkPlayer.getLocationType() == null ? "NULL" : "'" + linkPlayer.getLocationType().name() + "'") + ",`unlockedWorlds`=" + (worlds.isEmpty() ? "NULL" : "'" + worlds + "'") + " WHERE `uuid`='" + uuid.toString() + "'");
+        try {
+            LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
+            String worlds = worldsToString(uuid);
+
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=?,`teleportType`=?,`unlockedWorlds`=? WHERE `uuid`=?;");
+            ps.setString(1, linkPlayer.getPlayerData().getAsJson());
+            ps.setString(2, linkPlayer.getLocationType().name());
+            ps.setString(3, worlds);
+            ps.setString(4, uuid.toString());
+
+            ps.executeUpdate();
+
+            ps.close();
+            connection.close();
+
+        } catch(SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to save player: " + uuid.toString());
+        }
     }
 
     public void savePlayerWorlds(UUID uuid){
-        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
-        String worlds = worldsToString(uuid);
-        update("UPDATE `link_players` SET `unlockedWorlds`=" + (worlds.isEmpty() ? "NULL" : "'" + worlds + "'") + " WHERE `uuid`='" + uuid.toString() + "'");
+        try {
+            LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
+            String worlds = worldsToString(uuid);
 
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `unlockedWorlds`=? WHERE `uuid`=?;");
+            ps.setString(1, worlds);
+            ps.setString(2, uuid.toString());
+
+            ps.executeUpdate();
+
+            ps.close();
+            connection.close();
+        } catch(SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to save player worlds: " + uuid.toString());
+        }
     }
 
     public boolean playerExists(UUID uuid) {
-        ResultSet res = query("SELECT `id` FROM `link_players` WHERE `uuid`='" + uuid.toString() + "'");
         try {
-            return res.next();
-        } catch (Exception e){
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT `id` FROM `link_players` WHERE `uuid`=?;");
+            ps.setString(1, uuid.toString());
+
+            ResultSet res = ps.executeQuery();
+            boolean exists = res.next();
+
+            res.close();
+            ps.close();
+            connection.close();
+
+            return exists;
+        } catch(SQLException e) {
             return false;
         }
     }
 
     public void clearLinkPlayerDataFromDB(UUID uuid) {
-        update("UPDATE `link_players` SET `playerdata`=NULL,`teleportType`=NULL WHERE `uuid`='" + uuid.toString() + "'");
-    }
-
-    public ResultSet query(String sql) {
         try {
-            return statement.executeQuery(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=NULL,`teleportType`=NULL WHERE `uuid`=?;");
+            ps.setString(1, uuid.toString());
 
-    public int update(String sql) {
-        try {
-            return statement.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;
+            ps.executeUpdate();
+
+            ps.close();
+            connection.close();
+        } catch(SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to clear player data: " + uuid.toString());
         }
     }
 
