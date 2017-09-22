@@ -127,9 +127,21 @@ public class DatabaseHandler {
 
             Connection connection = this.getHikari().getConnection();
             PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=?,`teleportType`=?,`unlockedWorlds`=? WHERE `uuid`=?;");
-            ps.setString(1, linkPlayer.getPlayerData().getAsJson());
-            ps.setString(2, linkPlayer.getLocationType().name());
-            ps.setString(3, worlds);
+            if(linkPlayer.getPlayerData() != null && !linkPlayer.getPlayerData().getAsJson().isEmpty()) {
+                ps.setString(1, linkPlayer.getPlayerData().getAsJson());
+            } else {
+                ps.setString(1, "NULL");
+            }
+            if(linkPlayer.getLocationType() != null && !linkPlayer.getLocationType().name().isEmpty()) {
+                ps.setString(2, linkPlayer.getLocationType().name());
+            } else {
+                ps.setString(2, "NULL");
+            }
+            if(worlds != null && !worlds.isEmpty()) {
+                ps.setString(3, worlds);
+            } else {
+                ps.setString(3, "NULL");
+            }
             ps.setString(4, uuid.toString());
 
             ps.executeUpdate();
@@ -149,7 +161,11 @@ public class DatabaseHandler {
 
             Connection connection = this.getHikari().getConnection();
             PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `unlockedWorlds`=? WHERE `uuid`=?;");
-            ps.setString(1, worlds);
+            if(worlds != null && !worlds.isEmpty()) {
+                ps.setString(1, worlds);
+            } else {
+                ps.setString(1, "NULL");
+            }
             ps.setString(2, uuid.toString());
 
             ps.executeUpdate();
