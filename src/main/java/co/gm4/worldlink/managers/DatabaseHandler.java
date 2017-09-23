@@ -7,17 +7,13 @@ import co.gm4.worldlink.objects.LinkPlayerData;
 import co.gm4.worldlink.objects.LinkWorld;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariDataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import lombok.Getter;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import lombok.Getter;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -60,7 +56,7 @@ public class DatabaseHandler {
                 + "("
                 + "`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
                 + "`uuid` VARCHAR(36), "
-                + "`playerdata` BLOB(65535) NULL DEFAULT NULL, "
+                + "`playerdata` MEDIUMBLOB(65535) NULL DEFAULT NULL, "
                 + "`teleportType` VARCHAR(100) NULL DEFAULT NULL, "
                 + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL"
                 + ");");
@@ -68,7 +64,7 @@ public class DatabaseHandler {
 
             statement.close();
             connection.close();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Could not establish connection with the database");
             e.printStackTrace();
             WorldLink.get().getPluginLoader().disablePlugin(WorldLink.get());
@@ -116,7 +112,7 @@ public class DatabaseHandler {
             ps.executeUpdate();
             ps.close();
             connection.close();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Failed to register player: " + uuid.toString());
         }
     }
@@ -128,17 +124,17 @@ public class DatabaseHandler {
 
             Connection connection = this.getHikari().getConnection();
             PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=?,`teleportType`=?,`unlockedWorlds`=? WHERE `uuid`=?;");
-            if(linkPlayer.getPlayerData() != null && !linkPlayer.getPlayerData().getAsJson().isEmpty()) {
+            if (linkPlayer.getPlayerData() != null && !linkPlayer.getPlayerData().getAsJson().isEmpty()) {
                 ps.setString(1, linkPlayer.getPlayerData().getAsJson());
             } else {
                 ps.setNull(1, Types.BLOB);
             }
-            if(linkPlayer.getLocationType() != null && !linkPlayer.getLocationType().name().isEmpty()) {
+            if (linkPlayer.getLocationType() != null && !linkPlayer.getLocationType().name().isEmpty()) {
                 ps.setString(2, linkPlayer.getLocationType().name());
             } else {
                 ps.setNull(2, Types.VARCHAR);
             }
-            if(worlds != null && !worlds.isEmpty()) {
+            if (worlds != null && !worlds.isEmpty()) {
                 ps.setString(3, worlds);
             } else {
                 ps.setNull(3, Types.VARCHAR);
@@ -150,19 +146,19 @@ public class DatabaseHandler {
             ps.close();
             connection.close();
 
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Failed to save player: " + uuid.toString());
         }
     }
 
-    public void savePlayerWorlds(UUID uuid){
+    public void savePlayerWorlds(UUID uuid) {
         try {
             LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
             String worlds = worldsToString(uuid);
 
             Connection connection = this.getHikari().getConnection();
             PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `unlockedWorlds`=? WHERE `uuid`=?;");
-            if(worlds != null && !worlds.isEmpty()) {
+            if (worlds != null && !worlds.isEmpty()) {
                 ps.setString(1, worlds);
             } else {
                 ps.setNull(1, Types.VARCHAR);
@@ -173,7 +169,7 @@ public class DatabaseHandler {
 
             ps.close();
             connection.close();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Failed to save player worlds: " + uuid.toString());
         }
     }
@@ -192,7 +188,7 @@ public class DatabaseHandler {
             connection.close();
 
             return exists;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             return false;
         }
     }
@@ -207,7 +203,7 @@ public class DatabaseHandler {
 
             ps.close();
             connection.close();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Failed to clear player data: " + uuid.toString());
         }
     }
