@@ -52,14 +52,14 @@ public class DatabaseHandler {
             Statement statement = connection.createStatement();
 
             statement.executeUpdate(
-                "CREATE TABLE IF NOT EXISTS `link_players` "
-                + "("
-                + "`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
-                + "`uuid` VARCHAR(36), "
-                + "`playerdata` MEDIUMBLOB(65535) NULL DEFAULT NULL, "
-                + "`teleportType` VARCHAR(100) NULL DEFAULT NULL, "
-                + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL"
-                + ");");
+                    "CREATE TABLE IF NOT EXISTS `link_players` "
+                            + "("
+                            + "`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+                            + "`uuid` VARCHAR(36), "
+                            + "`playerdata` MEDIUMBLOB(65535) NULL DEFAULT NULL, "
+                            + "`teleportType` VARCHAR(100) NULL DEFAULT NULL, "
+                            + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL"
+                            + ");");
             // This MySQL user will not have perms for this: "SET GLOBAL max_allowed_packet = 65535;" // 1024 * 64
 
             statement.close();

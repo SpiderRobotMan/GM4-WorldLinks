@@ -65,6 +65,9 @@ public class LinkPlayerData {
 
     public void setLocation(LinkLocation location){
         Map<String, Object> map = location.serialize();
+        if (location.isIgnoreX()) map.put("x", this.location.get("x"));
+        if (location.isIgnoreY()) map.put("y", this.location.get("y"));
+        if (location.isIgnoreZ()) map.put("z", this.location.get("z"));
         if (location.isIgnoreYaw()) map.put("yaw", this.location.get("yaw"));
         if (location.isIgnorePitch()) map.put("pitch", this.location.get("pitch"));
         this.location = map;

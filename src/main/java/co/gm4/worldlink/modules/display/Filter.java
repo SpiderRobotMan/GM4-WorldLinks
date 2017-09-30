@@ -8,6 +8,8 @@ import co.gm4.worldlink.utils.Config;
 import co.gm4.worldlink.utils.PlayerUtils;
 import org.bukkit.Bukkit;
 
+import java.util.stream.Collectors;
+
 /**
  * Created by MatrixTunnel on 9/20/2017.
  */
@@ -16,6 +18,9 @@ public class Filter {
     public static boolean canDisplay(LinkPlayer linkPlayer, LinkWorld linkWorld) {
         Config config = WorldLink.get().getPluginConfig();
         boolean canDisplay = true;
+
+        // If it's not in the config, return
+        if (!config.getLinks().stream().map(Link::getName).collect(Collectors.toList()).contains(linkWorld.getName())) return false;
 
         for (Link link : config.getLinks()) {
             if (link.getName().equals(linkWorld.getName())) {

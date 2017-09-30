@@ -20,7 +20,7 @@ public class LinkLocation implements ConfigurationSerializable {
     private double x, y, z;
     private float yaw, pitch;
 
-    boolean ignoreYaw, ignorePitch;
+    boolean ignoreX, ignoreY, ignoreZ, ignoreYaw, ignorePitch;
 
     public LinkLocation(String world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
@@ -74,6 +74,9 @@ public class LinkLocation implements ConfigurationSerializable {
 
     public LinkLocation add(double x, double y, double z) {
         LinkLocation linkLocation = new LinkLocation(world, this.x + x, this.y + y, this.z + z, yaw, pitch);
+        linkLocation.setIgnoreX(this.ignoreX);
+        linkLocation.setIgnoreY(this.ignoreY);
+        linkLocation.setIgnoreZ(this.ignoreZ);
         linkLocation.setIgnoreYaw(this.ignoreYaw);
         linkLocation.setIgnorePitch(this.ignorePitch);
         return linkLocation;

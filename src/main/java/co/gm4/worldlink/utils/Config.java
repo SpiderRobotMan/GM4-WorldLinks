@@ -86,6 +86,9 @@ public class Config {
                 float yaw = ((Double) config.getDouble("links." + s + ".teleportation.location.yaw", 0)).floatValue();
                 float pitch = ((Double) config.getDouble("links." + s + ".teleportation.location.pitch", 0)).floatValue();
                 LinkLocation linkLocation = new LinkLocation(world, x, y, z, yaw, pitch);
+                linkLocation.setIgnoreX(!config.contains("links." + s + ".teleportation.location.x"));
+                linkLocation.setIgnoreY(!config.contains("links." + s + ".teleportation.location.y"));
+                linkLocation.setIgnoreZ(!config.contains("links." + s + ".teleportation.location.z"));
                 linkLocation.setIgnoreYaw(!config.contains("links." + s + ".teleportation.location.yaw"));
                 linkLocation.setIgnorePitch(!config.contains("links." + s + ".teleportation.location.pitch"));
                 link.setTargetLocation(linkLocation);

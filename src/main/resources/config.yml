@@ -30,7 +30,8 @@ server:
     display_name: "World Selector"
 
     # Lore of the item (also allows for color codes)
-    lore: "Selector of worlds!"
+    lore:
+      - "Selector of worlds!"
 
 # Other worlds that players can travel to from this world
 links:
@@ -104,21 +105,18 @@ links:
     teleportation:
 
       # The type of teleportation that will take place
-      type: "ABSOLUTE"
+      type: "RELATIVE_SAFE"
 
       # The location in the other world
-      # TODO Add stuff explaining R and S values
       location:
 
+        # If a value is not set, the server will use the current player location value.
+        # Example: If y is not set, the location will use x, z, yaw and pitch from the config, and use the player's y value.
         world: "world"
         x: 100.0
         y: 62.0
         z: -100.0
-
-        #Optional
         yaw: 0
-
-        #Optional
         pitch: 0
 
       # Commands run when the teleportation takes place

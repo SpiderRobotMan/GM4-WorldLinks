@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -40,14 +39,14 @@ public class DisplayTask implements Listener, Runnable {
                         double angle = (2 * Math.PI * i / worlds.size());
                         Vector point = new Vector(Math.cos(angle) * 1, -0.4, Math.sin(angle) * 1);
 
-                        boolean found = false;
+                        //boolean found = false;
                         Particle hoverParticle = null;
                         int hoverSpeed = 1;
                         int hoverCount = 0;
 
                         for (Link link : WorldLink.get().getPluginConfig().getLinks()) {
                             if (link.getName().equals(worlds.get(i).getName())) {
-                                found = true;
+                                //found = true;
                                 player.spawnParticle(Particle.valueOf(link.getDisplayType()), player.getEyeLocation().clone().add(point), link.getDisplayCount(), 0.0, 0.0, 0.0, link.getDisplaySpeed());
                                 if (link.getHoverType() != null) {
                                     hoverParticle = Particle.valueOf(link.getHoverType());
@@ -58,13 +57,13 @@ public class DisplayTask implements Listener, Runnable {
                             }
                         }
 
-                        if (!found) {
-                            player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation().clone().add(point), 1, 0.0, 0.0, 0.0, 0);
-                        }
+                        //if (!found) {
+                        //    player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation().clone().add(point), 1, 0.0, 0.0, 0.0, 0);
+                        //}
 
                         if (player.getLocation().getDirection().distance(point) < 0.17) {
-                            player.sendTitle("", ChatColor.AQUA + worlds.get(i).getName(), 0, 4, 2);
-                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent((found ? ChatColor.YELLOW + "Right click to travel" : ChatColor.RED + "Unable to travel from this location")));
+                            if (player.isOp()) player.sendTitle("", ChatColor.AQUA + worlds.get(i).getName(), 0, 4, 2); //TODO Change for perms and stuff (event worlds too)
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.YELLOW + "Right click to travel"));
                             if (hoverParticle != null)
                                 player.spawnParticle(hoverParticle, player.getEyeLocation().clone().add(point), hoverCount, 0.0, 0.0, 0.0, hoverSpeed);
                         }
@@ -73,8 +72,6 @@ public class DisplayTask implements Listener, Runnable {
             }
         }
     }
-
-    private BukkitTask playerLeftTask;
 
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
@@ -114,16 +111,16 @@ public class DisplayTask implements Listener, Runnable {
                             new ArrayList<>(link.getDuringCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
                             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15));
 
-                            //TODO Fix
                             if (link.isZoomOnClick()) player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 255));
                             WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
                             ServerUtils.sendToServer(player, link.getName());
-                            playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
-                                if (!player.isOnline()) {
-                                    new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-                                    playerLeftTask.cancel();
-                                }
-                            }, 3L, 3L);
+                            //BukkitTask playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
+                            //    if (!player.isOnline()) {
+                            //        new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
+                            //        //Bukkit.getScheduler().cancelTask(playerLeftTask.getTaskId());
+                            //    }
+                            //}, 3L, 3L);
+                            //playerLeftTask.cancel();
                             break;
                         }
                     }

@@ -97,11 +97,7 @@ public class PlayerUtils {
             player.setLevel(0);
             player.setExp(0);
 
-            player.getActivePotionEffects().forEach(potionEffect -> {
-                try {
-                    player.removePotionEffect(potionEffect.getType());
-                } catch (NullPointerException ignored) {}
-            });
+            player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         }
     }
 

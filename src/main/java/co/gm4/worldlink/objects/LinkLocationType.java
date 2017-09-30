@@ -29,7 +29,7 @@ public enum LinkLocationType {
             return newLocation.add(oldLocation.getX(), oldLocation.getY(), oldLocation.getZ());
         }
     },
-    RELATIVE_SAFE(30, 7) {
+    RELATIVE_SAFE(30, 256) {
         @Override
         public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
             return RELATIVE.getFixedLocation(oldLocation, newLocation);

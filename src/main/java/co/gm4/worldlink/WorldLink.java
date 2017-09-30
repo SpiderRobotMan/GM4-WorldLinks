@@ -6,14 +6,15 @@ import co.gm4.worldlink.managers.PlayerManager;
 import co.gm4.worldlink.modules.Module;
 import co.gm4.worldlink.utils.Config;
 import co.gm4.worldlink.utils.DisplayTask;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public final class WorldLink extends JavaPlugin {
@@ -51,10 +52,10 @@ public final class WorldLink extends JavaPlugin {
         displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
 
         databaseHandler = new DatabaseHandler(
-            pluginConfig.getDatabaseHost(),
-            pluginConfig.getDatabaseDatabase(),
-            pluginConfig.getDatabaseUsername(),
-            pluginConfig.getDatabasePassword()
+                pluginConfig.getDatabaseHost(),
+                pluginConfig.getDatabaseDatabase(),
+                pluginConfig.getDatabaseUsername(),
+                pluginConfig.getDatabasePassword()
         );
 
         modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
