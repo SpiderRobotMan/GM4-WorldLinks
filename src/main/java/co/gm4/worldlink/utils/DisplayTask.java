@@ -14,8 +14,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,8 @@ import java.util.List;
  * Created by MatrixTunnel on 9/12/2017.
  */
 public class DisplayTask implements Listener, Runnable {
+
+    private BukkitTask playerLeftTask;
 
     @Override
     public void run() {
@@ -109,18 +113,26 @@ public class DisplayTask implements Listener, Runnable {
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
 
                             new ArrayList<>(link.getDuringCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15));
 
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15)); //TODO Add toggle effect to config
                             if (link.isZoomOnClick()) player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 255));
-                            WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
+
+                            try {
+                                WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
+                            } catch (SQLException e) {
+                                player.sendMessage(ChatColor.RED + "You're too heavy for the teleporter to pick you up! Empty your inventory to travel");
+                                WorldLink.get().getLogger().warning("Player's inventory it too large to travel: " + player.getUniqueId().toString());
+                                e.printStackTrace();
+                                break;
+                            }
+
                             ServerUtils.sendToServer(player, link.getName());
-                            //BukkitTask playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
-                            //    if (!player.isOnline()) {
-                            //        new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-                            //        //Bukkit.getScheduler().cancelTask(playerLeftTask.getTaskId());
-                            //    }
-                            //}, 3L, 3L);
-                            //playerLeftTask.cancel();
+                            playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
+                                if (!player.isOnline()) {
+                                    new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
+                                    playerLeftTask.cancel();
+                                }
+                            }, 3L, 3L);
                             break;
                         }
                     }

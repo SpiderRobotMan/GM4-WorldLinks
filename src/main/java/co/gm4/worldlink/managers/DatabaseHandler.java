@@ -117,7 +117,7 @@ public class DatabaseHandler {
         }
     }
 
-    public void savePlayer(UUID uuid) {
+    public void savePlayer(UUID uuid) throws SQLException {
         try {
             LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(uuid);
             String worlds = worldsToString(uuid);

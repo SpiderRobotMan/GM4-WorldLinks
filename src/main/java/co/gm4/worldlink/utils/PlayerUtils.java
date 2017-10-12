@@ -11,6 +11,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -41,6 +42,23 @@ public class PlayerUtils {
                 resetPlayer(player);
                 player.setGameMode(data.getGamemode());
 
+                player.setVelocity(data.getVelocity());
+                Bukkit.getScheduler().runTask(WorldLink.get(), () -> {
+                    try {
+                        player.getInventory().setContents(data.getInventory());
+                    } catch (IOException e) {
+                        WorldLink.get().getLogger().severe("Failed to set player's inventory: " + player.getUniqueId().toString());
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        player.getEnderChest().setContents(data.getEnderChest());
+                    } catch (IOException e) {
+                        WorldLink.get().getLogger().severe("Failed to set player's enderchest inventory: " + player.getUniqueId().toString());
+                        e.printStackTrace();
+                    }
+                });
+
                 if (locationType != null) {
                     if (locationType.isSafe()) {
                         Location location = LocationUtils.getSafeLocation(data.getLocation(), locationType.getMaxRadius(), locationType.getMaxYRadius());
@@ -51,10 +69,7 @@ public class PlayerUtils {
                 } else {
                     player.teleport(data.getLocation());
                 }
-
-                player.setVelocity(data.getVelocity());
-                player.getInventory().setContents(data.getInventory());
-                player.getEnderChest().setContents(data.getEnderChest());
+                WorldLink.get().getLogger().info("Teleporting " + player.getUniqueId().toString() + " to location " + data.getLocation().toString());
 
                 player.setHealth(data.getHealth());
                 player.setHealthScale(data.getHealthScale());
@@ -80,9 +95,7 @@ public class PlayerUtils {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         });
-
     }
 
     private static void resetPlayer(Player player) {

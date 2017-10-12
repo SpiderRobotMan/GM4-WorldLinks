@@ -15,6 +15,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -95,7 +96,13 @@ public class PlayerListener implements Listener {
         }
 
         queuedJoins.remove(queuedJoin);
-        WorldLink.get().getServer().getScheduler().runTaskAsynchronously(WorldLink.get(), () -> database.savePlayer(event.getPlayer().getUniqueId()));
+        WorldLink.get().getServer().getScheduler().runTaskAsynchronously(WorldLink.get(), () -> {
+            try {
+                database.savePlayer(event.getPlayer().getUniqueId());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @EventHandler
