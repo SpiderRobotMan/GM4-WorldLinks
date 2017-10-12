@@ -56,7 +56,7 @@ public class DatabaseHandler {
                             + "("
                             + "`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
                             + "`uuid` VARCHAR(36), "
-                            + "`playerdata` MEDIUMBLOB(65535) NULL DEFAULT NULL, "
+                            + "`playerdata` MEDIUMBLOB NULL DEFAULT NULL, " // MEDIUMBLOB(65535)
                             + "`teleportType` VARCHAR(100) NULL DEFAULT NULL, "
                             + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL"
                             + ");");

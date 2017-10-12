@@ -60,6 +60,10 @@ public class Config {
 
             if (config.getConfigurationSection("links." + s + ".display_conditions") != null) {
                 link.setDisplayAdvancements(config.getStringList("links." + s + ".display_conditions.advancements"));
+
+                link.setDisplayLocation(config.getString("links." + s + ".display_conditions.location"));
+
+                link.setOffhandItem(config.getString("links." + s + ".display_conditions.offhand_item"));
             }
 
             if (config.getConfigurationSection("links." + s + ".effects") != null) {

@@ -16,6 +16,8 @@ public class Link {
     private String unlockAdvancementKey;
 
     private List<String> displayAdvancements;
+    private String displayLocation;
+    private String offhandItem;
 
     private boolean zoomOnClick;
     private String soundOnClick;

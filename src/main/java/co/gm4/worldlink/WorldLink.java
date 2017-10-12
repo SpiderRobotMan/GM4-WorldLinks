@@ -45,22 +45,26 @@ public final class WorldLink extends JavaPlugin {
     }
 
     private void init() {
-        pluginConfig = new Config();
-        serverName = pluginConfig.getServerName();
+        try {
+            pluginConfig = new Config();
+            serverName = pluginConfig.getServerName();
 
-        Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
-        displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
+            Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
+            displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
 
-        databaseHandler = new DatabaseHandler(
-                pluginConfig.getDatabaseHost(),
-                pluginConfig.getDatabaseDatabase(),
-                pluginConfig.getDatabaseUsername(),
-                pluginConfig.getDatabasePassword()
-        );
+            databaseHandler = new DatabaseHandler(
+                    pluginConfig.getDatabaseHost(),
+                    pluginConfig.getDatabaseDatabase(),
+                    pluginConfig.getDatabaseUsername(),
+                    pluginConfig.getDatabasePassword()
+            );
 
-        modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
+            modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
 
-        Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+            Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        } catch (Exception e) {
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
     }
 
     public void reload() {

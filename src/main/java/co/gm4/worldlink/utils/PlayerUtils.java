@@ -104,9 +104,9 @@ public class PlayerUtils {
     public static boolean hasAdvancement(Player player, String nameSpace) {
         Advancement advancement = null;
 
-        for (Iterator<Advancement> i = Bukkit.getServer().advancementIterator(); i.hasNext(); ) {
+        for (Iterator<Advancement> i = Bukkit.getServer().advancementIterator(); i.hasNext();) {
             Advancement adv = i.next();
-            if (adv.getKey().getKey().equalsIgnoreCase(nameSpace)) {
+            if ((adv.getKey().getNamespace() + ":" + adv.getKey().getKey()).equalsIgnoreCase(nameSpace)) {
                 advancement = adv;
                 break;
             }

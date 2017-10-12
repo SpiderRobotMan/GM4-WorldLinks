@@ -16,7 +16,7 @@ public class Advancement extends Module implements Listener {
     @EventHandler
     public void onUnlock(PlayerAdvancementDoneEvent event) {
         WorldLink.get().getPluginConfig().getLinks().forEach(link -> {
-            if (event.getAdvancement().getKey().getKey().equals(link.getUnlockAdvancementKey())) {
+            if ((event.getAdvancement().getKey().getNamespace() + ":"+ event.getAdvancement().getKey().getKey()).equals(link.getUnlockAdvancementKey())) {
                 LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer().getUniqueId());
 
                 //TODO Make this more clean (just needed it working)

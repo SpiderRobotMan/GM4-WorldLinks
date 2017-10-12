@@ -44,30 +44,35 @@ links:
 
       # Advancement trigger used to unlock world
       # The link will be unlocked and added to the player once this advancement is completed
-      advancement: "name/space_here"
+      advancement: "name_space:with/name_here"
 
     # Displays the link in the menu only if these conditions are met
     display_conditions:
 
       # Advancements required to see the link
-      # Can be left untouched if nothing is required
+      # This can be left untouched if you want it to display all the time or if nothing is required
       advancements:
-        - "name/space_here"
+        - "name_space:with/name_here"
+
+      # Location required to see the link
+      # Coordinates can be left as '~' if you don't care what location it is
+      location: "~, ~, ~"
+
+      # TODO Add more customization for this option
+      # Offhand item required to see the link
+      offhand_item: ""
 
       # TODO
-      holding: "STONE"
-
-      # TODO
-      on_block: "dirt"
+      on_block: ""
 
       # TODO 5-10 or >5 or =7
-      health: "5"
+      health: ""
 
       # TODO like health
-      hunger: "14"
+      hunger: ""
 
       # TODO day, night, int_values, etc.
-      time:
+      time: ""
 
     # Effects of the world particle
     effects:
