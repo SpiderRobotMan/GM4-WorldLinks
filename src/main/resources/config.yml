@@ -23,6 +23,9 @@ server:
     # List: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
     material: "STICK"
 
+    # Data value of selector item.
+    data: 0
+
     # Does the item have to match the data listed below?
     exact_match: false
 

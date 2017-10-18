@@ -17,7 +17,7 @@ public enum LinkLocationType {
             return newLocation;
         }
     },
-    ABSOLUTE_SAFE(5, 3) {
+    ABSOLUTE_SAFE(5, 5) {
         @Override
         public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
             return ABSOLUTE.getFixedLocation(oldLocation, newLocation);
@@ -29,7 +29,7 @@ public enum LinkLocationType {
             return newLocation.add(oldLocation.getX(), oldLocation.getY(), oldLocation.getZ());
         }
     },
-    RELATIVE_SAFE(30, 256) {
+    RELATIVE_SAFE(5, 5) {
         @Override
         public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
             return RELATIVE.getFixedLocation(oldLocation, newLocation);
@@ -41,7 +41,7 @@ public enum LinkLocationType {
             return new LinkLocation(newLocation.getWorld(), oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(), oldLocation.getYaw(), oldLocation.getPitch());
         }
     },
-    LOCAL_SAFE(5, 3) {
+    LOCAL_SAFE(5, 5) {
         @Override
         public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
             return LOCAL.getFixedLocation(oldLocation, newLocation);

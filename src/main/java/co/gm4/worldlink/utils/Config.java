@@ -44,8 +44,8 @@ public class Config {
         databaseUsername = config.getString("server.database.username", "root");
         databasePassword = config.getString("server.database.password", "");
 
-        selectorItem = getSelectorItem(config.getString("server.selector.material", "STICK"), config.getString("server.selector.display_name", "World Link"), config.getStringList("server.selector.lore"));
-        selectorItemHasToMatch = config.getBoolean("exact_match");
+        selectorItem = getSelectorItem(config.getString("server.selector.material", "STICK"), (short) config.getInt("server.selector.data", 0), config.getString("server.selector.display_name", "World Link"), config.getStringList("server.selector.lore"));
+        selectorItemHasToMatch = config.getBoolean("server.selector.exact_match");
 
         links = new ArrayList<>();
 
@@ -108,8 +108,8 @@ public class Config {
         });
     }
 
-    private ItemStack getSelectorItem(String type, String displayName, List<String> lore) {
-        ItemStack itemStack = new ItemStack(Material.getMaterial(type));
+    private ItemStack getSelectorItem(String type, short data, String displayName, List<String> lore) {
+        ItemStack itemStack = new ItemStack(Material.getMaterial(type), 1, data);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (displayName != null) {
@@ -120,6 +120,8 @@ public class Config {
             lore.forEach(l -> l = ChatColor.translateAlternateColorCodes('&', l));
             itemMeta.setLore(lore);
         }
+
+        itemStack.setItemMeta(itemMeta);
 
         return itemStack;
     }

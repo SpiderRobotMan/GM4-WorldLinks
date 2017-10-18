@@ -120,7 +120,7 @@ public class DisplayTask implements Listener, Runnable {
                             try {
                                 WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
                             } catch (SQLException e) {
-                                player.sendMessage(ChatColor.RED + "You're too heavy for the teleporter to pick you up! Empty your inventory to travel");
+                                player.sendMessage(ChatColor.RED + "You're too heavy for the teleporter to pick you up! Empty your inventory to travel.");
                                 WorldLink.get().getLogger().warning("Player's inventory it too large to travel: " + player.getUniqueId().toString());
                                 e.printStackTrace();
                                 break;
@@ -142,6 +142,12 @@ public class DisplayTask implements Listener, Runnable {
     }
 
     private boolean runCommand(Link link, LinkWorld linkWorld, LinkPlayer linkPlayer, String command) {
-        return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", linkPlayer.getPlayer().getName()).replace("%world%", linkWorld.getName()));
+        boolean run = false;
+
+        if(!command.equals("")) {
+            run = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", linkPlayer.getPlayer().getName()).replace("%world%", linkWorld.getName()));
+        }
+
+        return run;
     }
 }
