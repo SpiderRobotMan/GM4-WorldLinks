@@ -66,10 +66,13 @@ public class LocationUtils {
         location.getBlock().breakNaturally();
         location.getBlock().getRelative(BlockFace.UP).breakNaturally();
         if(UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType())) {
-            location.getBlock().getRelative(BlockFace.UP).setType(Material.DIRT);
+            location.getBlock().getRelative(BlockFace.DOWN).setType(Material.DIRT);
         }
 
-        return location.add(0.0D, 0.5D, 0.0D);
+        location.setX(Math.floor(location.getX()) + 0.5D);
+        location.setZ(Math.floor(location.getZ()) + 0.5D);
+        location.setY(Math.floor(location.getY()) + 0.5D);
+        return location;
 
         /*for (int radius = 0; radius <= maxRadius; radius++) {
             for (int x = -(radius); x <= radius; x++) {
