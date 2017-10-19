@@ -25,7 +25,7 @@ public class PlayerUtils {
         ItemStack configItem = config.getSelectorItem();
 
         if(config.selectorItemHasToMatch()) {
-            return handItem.getItemMeta() != null && (handItem.getType() == configItem.getType() && handItem.getDurability() == configItem.getDurability() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName()) && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore()));
+            return handItem.getItemMeta() != null && handItem.getItemMeta().getDisplayName() != null && handItem.getItemMeta().getLore() != null && (handItem.getType() == configItem.getType() && handItem.getDurability() == configItem.getDurability() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName()) && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore()));
         }
 
         return configItem.isSimilar(handItem);
