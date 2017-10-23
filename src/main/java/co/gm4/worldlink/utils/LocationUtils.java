@@ -23,6 +23,22 @@ public class LocationUtils {
     }).collect(Collectors.toList()));
 
     private static boolean isSafe(Location location) {
+        if(UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType()) || location.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK) {
+            return false;
+        }
+
+        if(location.getBlock().getType().isSolid() || !location.getBlock().getType().isTransparent() || location.getBlock().getType().name().endsWith("LAVA")) {
+
+        }
+
+        if(
+            location.getBlock().getRelative(BlockFace.UP).getType().isSolid() ||
+            !location.getBlock().getRelative(BlockFace.UP).getType().isTransparent() ||
+            location.getBlock().getRelative(BlockFace.UP).getType().name().endsWith("LAVA") ||
+            location.getBlock().getType().name().endsWith("WATER")
+        ) {
+
+        }
         return !(UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType()) || location.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK) && !(location.getBlock().getType().isSolid() || !location.getBlock().getType().isTransparent() || location.getBlock().getType().name().endsWith("LAVA")) && !(location.getBlock().getRelative(BlockFace.UP).getType().isSolid() || !location.getBlock().getRelative(BlockFace.UP).getType().isTransparent() || location.getBlock().getRelative(BlockFace.UP).getType().name().endsWith("LAVA") || location.getBlock().getType().name().endsWith("WATER"));
 
     }
@@ -35,6 +51,10 @@ public class LocationUtils {
      * @return
      */
     public static Location getSafeLocation(Location location, int maxRadius, int maxYRadius) {
+        location.setX(Math.floor(location.getX()) + 0.5D);
+        location.setZ(Math.floor(location.getZ()) + 0.5D);
+        location.setY(Math.floor(location.getY()) + 0.5D);
+
         if(isSafe(location)) return location;
 
         // Search for nearest safe zone within radius.
@@ -63,15 +83,12 @@ public class LocationUtils {
         }
 
         // Make safe space
-        location.getBlock().breakNaturally();
-        location.getBlock().getRelative(BlockFace.UP).breakNaturally();
+        location.getBlock().setType(Material.AIR);
+        location.getBlock().getRelative(BlockFace.UP).setType(Material.AIR);
         if(UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType())) {
             location.getBlock().getRelative(BlockFace.DOWN).setType(Material.DIRT);
         }
 
-        location.setX(Math.floor(location.getX()) + 0.5D);
-        location.setZ(Math.floor(location.getZ()) + 0.5D);
-        location.setY(Math.floor(location.getY()) + 0.5D);
         return location;
 
         /*for (int radius = 0; radius <= maxRadius; radius++) {
