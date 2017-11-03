@@ -23,11 +23,11 @@ server:
     # List: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
     material: "STICK"
 
-    # Data value of selector item.
-    data: 0
-
     # Does the item have to match the data listed below?
     exact_match: false
+
+    # Data value of the selector item
+    data: 0
 
     # Display name of the item (allows color codes)
     display_name: "World Selector"
@@ -66,7 +66,7 @@ links:
       offhand_item: ""
 
       # TODO
-      on_block: ""
+      on_material: ""
 
       # TODO 5-10 or >5 or =7
       health: ""
@@ -113,6 +113,17 @@ links:
     teleportation:
 
       # The type of teleportation that will take place
+      #
+
+      # ABSOLUTE
+      # - This will always teleport you to the coordinates and world provided
+      #
+      # RELATIVE
+      # - This acts like a '~' in the /tp command where it takes your current coordinates and adds to them
+      #
+      #
+      # Note: If you append `_SAFE` to the end of any type, it will always put you in a safe place
+      #
       type: "RELATIVE_SAFE"
 
       # The location in the other world

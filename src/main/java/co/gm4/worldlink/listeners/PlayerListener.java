@@ -15,6 +15,9 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +54,9 @@ public class PlayerListener implements Listener {
                 database.registerPlayer(event.getUniqueId());
             }
 
-            queuedJoin = new QueuedJoin(event.getUniqueId(), database.getLinkPlayer(event.getUniqueId()), System.currentTimeMillis());
+            LinkPlayer linkPlayer = database.getLinkPlayer(event.getUniqueId());
+            queuedJoin = new QueuedJoin(event.getUniqueId(), linkPlayer, System.currentTimeMillis());
+            setStatData(linkPlayer);
         } catch (Exception e) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             event.setKickMessage(org.bukkit.ChatColor.RED + "Failed to load LinkPlayer data.");
@@ -86,6 +91,8 @@ public class PlayerListener implements Listener {
                 PlayerUtils.updatePlayer(event.getPlayer(), linkPlayer.getPlayerData(), linkPlayer.getLocationType());
                 linkPlayer.setPlayerData(null);
                 linkPlayer.setLocationType(null);
+                linkPlayer.setAdvancementsJson(null);
+                linkPlayer.setStatsJson(null);
             } catch (Exception e) {
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                 event.setKickMessage(ChatColor.RED + "Unable to load LinkPlayer data. Please try again");
@@ -121,6 +128,29 @@ public class PlayerListener implements Listener {
             }
         }
         return null;
+    }
+
+    private void writeFile(File file, String input) {
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter writer = new FileWriter(file);
+            writer.write(input);
+            writer.close();
+        } catch (IOException e) {
+            WorldLink.get().getLogger().warning("Could not write file " + file.getName());
+            e.printStackTrace();
+        }
+    }
+
+    private void setStatData(LinkPlayer linkPlayer) {
+        if (linkPlayer.getAdvancementsJson() != null) {
+            writeFile(new File(Bukkit.getWorlds().get(0).getName() + "/advancements/" + linkPlayer.getUuid().toString() + ".json"), linkPlayer.getAdvancementsJson());
+        }
+        if (linkPlayer.getStatsJson() != null) {
+            writeFile(new File(Bukkit.getWorlds().get(0).getName() + "/stats/" + linkPlayer.getUuid().toString() + ".json"), linkPlayer.getStatsJson());
+        }
     }
 
 }

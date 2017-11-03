@@ -17,16 +17,20 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by MatrixTunnel on 9/12/2017.
  */
 public class DisplayTask implements Listener, Runnable {
 
-    private BukkitTask playerLeftTask;
+    private Map<UUID, BukkitTask> playerLeftTasks = new HashMap<>();
 
     @Override
     public void run() {
@@ -85,6 +89,7 @@ public class DisplayTask implements Listener, Runnable {
         if (linkPlayer.isGettingTransferred() || event.getHand() == EquipmentSlot.OFF_HAND || !PlayerUtils.isViewingLinks(event.getPlayer())) return;
 
         if (event.getAction().name().contains("RIGHT_CLICK")) {
+            event.setCancelled(true);
             List<LinkWorld> worlds = linkPlayer.getFilteredWorlds();
 
             for (int i = 0; i < worlds.size(); i++) {
@@ -112,6 +117,8 @@ public class DisplayTask implements Listener, Runnable {
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setPlayerData(playerData);
                             WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
 
+                            saveData(linkPlayer);
+
                             new ArrayList<>(link.getDuringCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
 
                             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15)); //TODO Add toggle effect to config
@@ -127,12 +134,14 @@ public class DisplayTask implements Listener, Runnable {
                             }
 
                             ServerUtils.sendToServer(player, link.getName());
-                            playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
+                            BukkitTask playerLeftTask = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), () -> {
                                 if (!player.isOnline()) {
                                     new ArrayList<>(link.getAfterCommands()).forEach(s -> runCommand(link, worlds.get(I), linkPlayer, s));
-                                    playerLeftTask.cancel();
+                                    playerLeftTasks.get(linkPlayer.getUuid()).cancel();
                                 }
-                            }, 3L, 3L);
+                            }, 1L, 0L);
+
+                            playerLeftTasks.put(linkPlayer.getUuid(), playerLeftTask);
                             break;
                         }
                     }
@@ -142,12 +151,53 @@ public class DisplayTask implements Listener, Runnable {
     }
 
     private boolean runCommand(Link link, LinkWorld linkWorld, LinkPlayer linkPlayer, String command) {
-        boolean run = false;
+        return !command.isEmpty() && Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", linkPlayer.getPlayer().getName()).replace("%world%", linkWorld.getName()));
 
-        if(!command.equals("")) {
-            run = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", linkPlayer.getPlayer().getName()).replace("%world%", linkWorld.getName()));
+    }
+
+    private void saveData(LinkPlayer player) {
+        try {
+            savePlayerStats(player.getPlayer());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return run;
+        File advancements = new File(Bukkit.getWorlds().get(0).getName() + "/advancements/" + player.getPlayer().getUniqueId().toString() + ".json");
+        if (advancements.exists()) {
+            player.setAdvancementsJson(getFileContents(advancements));
+        } else {
+            player.setAdvancementsJson(null);
+        }
+        File stats = new File(Bukkit.getWorlds().get(0).getName() + "/stats/" + player.getPlayer().getUniqueId().toString() + ".json");
+        if (stats.exists()) {
+            player.setStatsJson(getFileContents(stats));
+        } else {
+            player.setStatsJson(null);
+        }
     }
+
+    private String getFileContents(File file) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            StringBuilder stringBuilder = new StringBuilder();
+            reader.lines().forEach(stringBuilder::append);
+            return stringBuilder.toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void savePlayerStats(Player player) throws Exception {
+        Object server = Reflection.getNMSClass("MinecraftServer").getMethod("getServer").invoke(null);
+        Object playerList = server.getClass().getMethod("getPlayerList").invoke(server);
+        Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
+
+        Method savePlayerFileMethod = playerList.getClass().getSuperclass().getDeclaredMethod("savePlayerFile", Reflection.getNMSClass("EntityPlayer"));
+
+        savePlayerFileMethod.setAccessible(true);
+        savePlayerFileMethod.invoke(playerList, entityPlayer);
+        savePlayerFileMethod.setAccessible(false);
+    }
+
 }

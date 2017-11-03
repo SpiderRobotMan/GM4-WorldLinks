@@ -3,9 +3,6 @@ package co.gm4.worldlink.utils;
 import co.gm4.worldlink.WorldLink;
 import co.gm4.worldlink.objects.LinkLocationType;
 import co.gm4.worldlink.objects.LinkPlayerData;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,6 +10,10 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -24,11 +25,15 @@ public class PlayerUtils {
         Config config = WorldLink.get().getPluginConfig();
         ItemStack configItem = config.getSelectorItem();
 
-        if(config.selectorItemHasToMatch()) {
-            return handItem.getItemMeta() != null && handItem.getItemMeta().getDisplayName() != null && handItem.getItemMeta().getLore() != null && (handItem.getType() == configItem.getType() && handItem.getDurability() == configItem.getDurability() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName()) && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore()));
-        }
-
-        return configItem.isSimilar(handItem);
+        return config.selectorItemHasToMatch() ?
+                handItem.getItemMeta() != null &&
+                handItem.getItemMeta().getDisplayName() != null &&
+                handItem.getItemMeta().getLore() != null && (
+                        handItem.getType().equals(configItem.getType()) &&
+                        handItem.getDurability() == configItem.getDurability() &&
+                        handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName()) &&
+                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())
+                ) : handItem.isSimilar(configItem);
     }
 
     public static void updatePlayer(Player player, LinkPlayerData data, LinkLocationType locationType) {

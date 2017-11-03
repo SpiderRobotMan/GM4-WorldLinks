@@ -34,18 +34,6 @@ public enum LinkLocationType {
         public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
             return RELATIVE.getFixedLocation(oldLocation, newLocation);
         }
-    },
-    LOCAL(0, 0) {
-        @Override
-        public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
-            return new LinkLocation(newLocation.getWorld(), oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(), oldLocation.getYaw(), oldLocation.getPitch());
-        }
-    },
-    LOCAL_SAFE(5, 5) {
-        @Override
-        public LinkLocation getFixedLocation(LinkLocation oldLocation, LinkLocation newLocation) {
-            return LOCAL.getFixedLocation(oldLocation, newLocation);
-        }
     };
 
     private int maxRadius;
