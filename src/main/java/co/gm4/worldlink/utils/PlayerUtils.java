@@ -25,15 +25,13 @@ public class PlayerUtils {
         Config config = WorldLink.get().getPluginConfig();
         ItemStack configItem = config.getSelectorItem();
 
-        return config.selectorItemHasToMatch() ?
-                handItem.getItemMeta() != null &&
-                handItem.getItemMeta().getDisplayName() != null &&
-                handItem.getItemMeta().getLore() != null && (
-                        handItem.getType().equals(configItem.getType()) &&
-                        handItem.getDurability() == configItem.getDurability() &&
-                        handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName()) &&
-                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())
-                ) : handItem.isSimilar(configItem);
+        return !config.selectorItemHasToMatch() ?
+                handItem != null && configItem != null &&
+                handItem.hasItemMeta() && configItem.hasItemMeta() && (
+                        (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) ||
+                        (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) ||
+                        handItem.getType().equals(configItem.getType())
+                ) : configItem.isSimilar(handItem);
     }
 
     public static void updatePlayer(Player player, LinkPlayerData data, LinkLocationType locationType) {
@@ -73,7 +71,8 @@ public class PlayerUtils {
                 } else {
                     player.teleport(data.getLocation());
                 }
-                WorldLink.get().getLogger().info("Teleporting " + player.getUniqueId().toString() + " to location " + data.getLocation().toString());
+
+                player.setBedSpawnLocation(data.getBedLocation(), true);
 
                 player.setHealth(data.getHealth());
                 player.setHealthScale(data.getHealthScale());
@@ -93,6 +92,10 @@ public class PlayerUtils {
                 player.setFireTicks(data.getFireTicks());
                 player.setMaximumNoDamageTicks(data.getMaxNoDamageTicks());
                 player.setNoDamageTicks(data.getNoDamageTicks());
+                player.setFallDistance(data.getFallDistance());
+
+                player.setFlying(data.isFlying());
+                player.setGliding(data.isGliding());
 
                 player.getInventory().setHeldItemSlot(data.getHeldItemSlot());
                 player.updateInventory();

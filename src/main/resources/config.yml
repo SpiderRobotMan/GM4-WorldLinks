@@ -83,7 +83,10 @@ links:
       # Zoom in on click (adds slowness)
       zoom: true
 
-      # Play portal sound on click TODO
+      # Blindness on click
+      blindness: true
+
+      # TODO Play portal sound on click
       sound: true
 
       # -----
@@ -94,18 +97,19 @@ links:
       particles:
 
         # The particle that will display when holding the selection tool
-        # TODO Add `offset: "0.0, 0.0, 0.0"` later for colors with red dust
+        # List: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
         display:
 
           type: "FLAME"
+          offset: "0.0, 0.0, 0.0"
           speed: 0
           count: 1
 
         # The particle that will display when hovering over the world particle
-        # Note: offset can't be added here due to how it displays (will be changed later)
         hover:
 
           type: "PORTAL"
+          offset: "0.0, 0.0, 0.0"
           speed: 0
           count: 1
 
@@ -139,6 +143,7 @@ links:
         pitch: 0
 
       # Commands run when the teleportation takes place
+      #
       # %player% = player's name
       # %world% = the world's name they are teleporting to
       #

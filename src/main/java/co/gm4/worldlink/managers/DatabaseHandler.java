@@ -114,18 +114,14 @@ public class DatabaseHandler {
         }
     }
 
-    public void registerPlayer(UUID uuid) {
-        try {
-            Connection connection = this.getHikari().getConnection();
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO `link_players`(`uuid`) VALUES (?);");
-            ps.setString(1, uuid.toString());
+    public void registerPlayer(UUID uuid) throws SQLException {
+        Connection connection = this.getHikari().getConnection();
+        PreparedStatement ps = connection.prepareStatement("INSERT INTO `link_players`(`uuid`) VALUES (?);");
+        ps.setString(1, uuid.toString());
 
-            ps.executeUpdate();
-            ps.close();
-            connection.close();
-        } catch (SQLException e) {
-            WorldLink.get().getLogger().warning("Failed to register player: " + uuid.toString());
-        }
+        ps.executeUpdate();
+        ps.close();
+        connection.close();
     }
 
     public void savePlayer(UUID uuid) throws SQLException {

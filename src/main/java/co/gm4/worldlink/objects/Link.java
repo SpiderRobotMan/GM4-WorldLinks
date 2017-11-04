@@ -19,14 +19,14 @@ public class Link {
     private String displayLocation;
     private String offhandItem;
 
-    private boolean zoomOnClick;
-    private String soundOnClick;
+    private boolean zoomOnClick, blindnessOnClick, portalSoundOnClick;
 
-
-    private String displayType, displayOffset;
+    private String displayType;
+    private double displayOffsetX, displayOffsetY, displayOffsetZ;
     private int displayCount, displaySpeed;
 
-    private String hoverType, hoverOffset;
+    private String hoverType;
+    private double hoverOffsetX, hoverOffsetY, hoverOffsetZ;
     private int hoverCount, hoverSpeed;
 
     private LinkLocation targetLocation;

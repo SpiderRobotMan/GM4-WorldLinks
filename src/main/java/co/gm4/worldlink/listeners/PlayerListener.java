@@ -2,15 +2,17 @@ package co.gm4.worldlink.listeners;
 
 import co.gm4.worldlink.WorldLink;
 import co.gm4.worldlink.managers.DatabaseHandler;
-import co.gm4.worldlink.objects.LinkPlayer;
-import co.gm4.worldlink.objects.QueuedJoin;
+import co.gm4.worldlink.objects.*;
 import co.gm4.worldlink.utils.PlayerUtils;
+import co.gm4.worldlink.utils.ServerUtils;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -57,6 +59,10 @@ public class PlayerListener implements Listener {
             LinkPlayer linkPlayer = database.getLinkPlayer(event.getUniqueId());
             queuedJoin = new QueuedJoin(event.getUniqueId(), linkPlayer, System.currentTimeMillis());
             setStatData(linkPlayer);
+        } catch (SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to register player: " + event.getUniqueId().toString());
+            e.printStackTrace();
+            return;
         } catch (Exception e) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             event.setKickMessage(org.bukkit.ChatColor.RED + "Failed to load LinkPlayer data.");
@@ -110,6 +116,21 @@ public class PlayerListener implements Listener {
                 e.printStackTrace();
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
+        List<Link> links = WorldLink.get().getPluginConfig().getLinks();
+
+        if (player.getBedSpawnLocation() != null && !player.getBedSpawnLocation().getWorld().getName().equals(WorldLink.get().getPluginConfig().getServerName())) {
+            Link link = links.stream().filter(link1 -> link1.getName().equals(player.getBedSpawnLocation().getWorld().getName())).findFirst().orElse(null);
+
+            if (link != null) {
+                ServerUtils.sendToLink(link, linkPlayer, new LinkWorld(link.getName()), new LinkLocation(player.getBedSpawnLocation())); // Override the normal location
+            }
+        }
     }
 
     @EventHandler

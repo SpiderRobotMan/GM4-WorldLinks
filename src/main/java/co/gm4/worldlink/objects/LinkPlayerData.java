@@ -20,7 +20,7 @@ import java.util.Map;
 public class LinkPlayerData {
 
     private final GameMode gamemode;
-    private Map<String, Object> location;
+    private Map<String, Object> location, bedLocation;
     private final Map<String, Object> velocity;
     private final String inventory;
     private final String enderchest;
@@ -35,10 +35,14 @@ public class LinkPlayerData {
     private final int fireTicks;
     private final int maxNoDamageTicks, noDamageTicks;
     private final int heldItemSlot;
+    private final boolean flying;
+    private final boolean gliding;
+    private final float fallDistance;
 
     public LinkPlayerData(Player player) {
         this.gamemode = player.getGameMode();
         this.location = player.getLocation().serialize();
+        this.bedLocation = player.getBedSpawnLocation().serialize();
         this.velocity = player.getVelocity().serialize();
         this.inventory = Serialization.itemStackArrayToBase64(player.getInventory().getContents());
         this.enderchest = Serialization.itemStackArrayToBase64(player.getEnderChest().getContents());
@@ -57,10 +61,17 @@ public class LinkPlayerData {
         this.maxNoDamageTicks = player.getMaximumNoDamageTicks();
         this.noDamageTicks = player.getNoDamageTicks();
         this.heldItemSlot = player.getInventory().getHeldItemSlot();
+        this.flying = player.isFlying();
+        this.gliding = player.isGliding();
+        this.fallDistance = player.getFallDistance();
     }
 
     public Location getLocation() {
         return Location.deserialize(location);
+    }
+
+    public Location getBedLocation() {
+        return Location.deserialize(bedLocation);
     }
 
     public void setLocation(LinkLocation location){
@@ -75,6 +86,10 @@ public class LinkPlayerData {
 
     public void setLocation(Location location){
         this.location = location.serialize();
+    }
+
+    public void setBedLocation(Location bedLocation){
+        this.bedLocation = bedLocation.serialize();
     }
 
     public Vector getVelocity() {

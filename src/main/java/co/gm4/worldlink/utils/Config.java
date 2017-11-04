@@ -12,8 +12,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -44,7 +46,7 @@ public class Config {
         databaseUsername = config.getString("server.database.username", "root");
         databasePassword = config.getString("server.database.password", "");
 
-        selectorItem = getSelectorItem(config.getString("server.selector.material", "STICK"), (short) config.getInt("server.selector.data", 0), config.getString("server.selector.display_name", "World Link"), config.getStringList("server.selector.lore"));
+        selectorItem = getSelectorItem(config.getString("server.selector.material", "STICK"), (short) config.getInt("server.selector.data", 0), config.getString("server.selector.display_name", "World Selector"), config.getStringList("server.selector.lore"));
         selectorItemHasToMatch = config.getBoolean("server.selector.exact_match");
 
         links = new ArrayList<>();
@@ -68,13 +70,29 @@ public class Config {
 
             if (config.getConfigurationSection("links." + s + ".effects") != null) {
                 link.setZoomOnClick(config.getBoolean("links." + s + ".effects.zoom", true));
+                link.setBlindnessOnClick(config.getBoolean("links." + s + ".effects.blindness", true));
+                link.setPortalSoundOnClick(config.getBoolean("links." + s + ".effects.sound", true));
 
                 link.setDisplayType(config.getString("links." + s + ".effects.particles.display.type", "FLAME"));
+                String displayOffset = config.getString("links." + s + ".effects.particles.display.offset", "0.0, 0.0, 0.0");
+                List<String> displayOffsetList = Arrays.stream(displayOffset.split(", ")).collect(Collectors.toList());
+                if (!displayOffsetList.isEmpty() && displayOffsetList.size() == 3) {
+                    link.setDisplayOffsetX(Double.parseDouble(displayOffsetList.get(0)));
+                    link.setDisplayOffsetY(Double.parseDouble(displayOffsetList.get(1)));
+                    link.setDisplayOffsetZ(Double.parseDouble(displayOffsetList.get(2)));
+                }
                 link.setDisplaySpeed(config.getInt("links." + s + ".effects.particles.display.speed", 0));
                 link.setDisplayCount(config.getInt("links." + s + ".effects.particles.display.count", 1));
 
                 if (config.getConfigurationSection("links." + s + ".effects.particles.hover") != null) {
                     link.setHoverType(config.getString("links." + s + ".effects.particles.hover.type", "PORTAL"));
+                    String hoverOffset = config.getString("links." + s + ".effects.particles.hover.offset", "0.0, 0.0, 0.0");
+                    List<String> hoverOffsetList = Arrays.stream(hoverOffset.split(", ")).collect(Collectors.toList());
+                    if (!hoverOffsetList.isEmpty() && hoverOffsetList.size() == 3) {
+                        link.setHoverOffsetX(Double.parseDouble(hoverOffsetList.get(0)));
+                        link.setHoverOffsetY(Double.parseDouble(hoverOffsetList.get(1)));
+                        link.setHoverOffsetZ(Double.parseDouble(hoverOffsetList.get(2)));
+                    }
                     link.setHoverSpeed(config.getInt("links." + s + ".effects.particles.hover.speed", 0));
                     link.setHoverCount(config.getInt("links." + s + ".effects.particles.hover.count", 1));
                 }
