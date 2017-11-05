@@ -8,12 +8,12 @@ import co.gm4.worldlink.utils.ServerUtils;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -89,6 +89,8 @@ public class PlayerListener implements Listener {
 
         LinkPlayer linkPlayer = queuedJoin.getLinkPlayer();
         linkPlayer.setPlayer(event.getPlayer());
+        linkPlayer.setLastLoginTime(System.currentTimeMillis());
+        linkPlayer.setGettingTransferred(false);
 
         WorldLink.get().getPlayerManager().addPlayer(linkPlayer);
 
@@ -118,19 +120,26 @@ public class PlayerListener implements Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onDeath(PlayerDeathEvent event) {
-        Player player = event.getEntity();
-        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(player.getUniqueId());
-        List<Link> links = WorldLink.get().getPluginConfig().getLinks();
-
-        if (player.getBedSpawnLocation() != null && !player.getBedSpawnLocation().getWorld().getName().equals(WorldLink.get().getPluginConfig().getServerName())) {
-            Link link = links.stream().filter(link1 -> link1.getName().equals(player.getBedSpawnLocation().getWorld().getName())).findFirst().orElse(null);
-
-            if (link != null) {
-                ServerUtils.sendToLink(link, linkPlayer, new LinkWorld(link.getName()), new LinkLocation(player.getBedSpawnLocation())); // Override the normal location
+        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getEntity());
+        if (linkPlayer.getRespawnLocation() != null) {
+            if (linkPlayer.getRespawnLocation().equals(WorldLink.get().getPluginConfig().getServerName())) {
+                if ((System.currentTimeMillis() - linkPlayer.getLastLoginTime()) < 1000) // Don't show death message if just logging in
+                    event.setDeathMessage("");
+                return;
             }
+
+            if (!event.getKeepInventory()) event.getEntity().getInventory().clear();
+            ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(linkPlayer.getRespawnLocation()), new LinkLocation(linkPlayer.getPlayer().getLocation()), LinkLocationType.ABSOLUTE);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSleep(PlayerBedEnterEvent event) {
+        if (event.isCancelled()) return;
+        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer());
+        linkPlayer.setRespawnLocation(WorldLink.get().getPluginConfig().getServerName());
     }
 
     @EventHandler
@@ -139,7 +148,6 @@ public class PlayerListener implements Listener {
             if (WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer()).getPlayerData() == null) WorldLink.get().getDatabaseHandler().savePlayerWorlds(event.getPlayer().getUniqueId()); // If the player data is not null, it means that the player worlds were already saved into the database.
             WorldLink.get().getPlayerManager().removePlayer(WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer().getUniqueId()));
         });
-
     }
 
     private QueuedJoin getQueuedLinkPlayer(UUID uuid) {

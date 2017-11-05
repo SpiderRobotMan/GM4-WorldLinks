@@ -3,6 +3,7 @@ package co.gm4.worldlink.objects;
 import co.gm4.worldlink.utils.Serialization;
 import com.google.gson.Gson;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -20,7 +22,7 @@ import java.util.Map;
 public class LinkPlayerData {
 
     private final GameMode gamemode;
-    private Map<String, Object> location, bedLocation;
+    private Map<String, Object> location;
     private final Map<String, Object> velocity;
     private final String inventory;
     private final String enderchest;
@@ -42,7 +44,6 @@ public class LinkPlayerData {
     public LinkPlayerData(Player player) {
         this.gamemode = player.getGameMode();
         this.location = player.getLocation().serialize();
-        this.bedLocation = player.getBedSpawnLocation().serialize();
         this.velocity = player.getVelocity().serialize();
         this.inventory = Serialization.itemStackArrayToBase64(player.getInventory().getContents());
         this.enderchest = Serialization.itemStackArrayToBase64(player.getEnderChest().getContents());
@@ -67,11 +68,14 @@ public class LinkPlayerData {
     }
 
     public Location getLocation() {
-        return Location.deserialize(location);
-    }
-
-    public Location getBedLocation() {
-        return Location.deserialize(bedLocation);
+        Location loc;
+        try {
+            loc = Location.deserialize(location);
+        } catch (IllegalArgumentException ex) {
+            location.put("world", Bukkit.getWorlds().get(0).getName());
+            loc = Location.deserialize(location);
+        }
+        return loc;
     }
 
     public void setLocation(LinkLocation location){
@@ -86,10 +90,6 @@ public class LinkPlayerData {
 
     public void setLocation(Location location){
         this.location = location.serialize();
-    }
-
-    public void setBedLocation(Location bedLocation){
-        this.bedLocation = bedLocation.serialize();
     }
 
     public Vector getVelocity() {

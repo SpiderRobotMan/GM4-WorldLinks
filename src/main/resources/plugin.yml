@@ -2,3 +2,13 @@ name: WorldLink
 version: ${project.version}
 main: co.gm4.worldlink.WorldLink
 authors: [theminecoder, MatrixTunnel]
+
+commands:
+  world:
+    description: Allows you to connect to the different worlds
+    permission: gm4.command.world
+    usage: /world <name>
+
+permissions:
+  gm4.command.world:
+    default: op

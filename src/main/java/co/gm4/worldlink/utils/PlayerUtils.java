@@ -72,8 +72,6 @@ public class PlayerUtils {
                     player.teleport(data.getLocation());
                 }
 
-                player.setBedSpawnLocation(data.getBedLocation(), true);
-
                 player.setHealth(data.getHealth());
                 player.setHealthScale(data.getHealthScale());
                 player.setHealthScaled(data.isHealthScaled());

@@ -45,6 +45,34 @@ public class ServerUtils {
         }
     }
 
+    public static void sendToLinkWorld(LinkPlayer linkPlayer, LinkWorld linkWorld, LinkLocation linkLocation, LinkLocationType locationType) {
+        Player player = linkPlayer.getPlayer();
+
+        linkPlayer.setGettingTransferred(true);
+
+        LinkPlayerData playerData = new LinkPlayerData(player);
+
+        if (locationType == null) {
+            locationType = LinkLocationType.ABSOLUTE_SAFE;
+        } else playerData.setLocation(linkLocation);
+
+        WorldLink.get().getPlayerManager().getLinkPlayer(player).setLocationType(locationType);
+        WorldLink.get().getPlayerManager().getLinkPlayer(player).setPlayerData(playerData);
+
+        saveData(linkPlayer);
+
+        try {
+            WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
+        } catch (SQLException e) {
+            player.sendMessage(ChatColor.RED + "You're too heavy for the universe to pick you up! Empty your inventory to travel.");
+            WorldLink.get().getLogger().warning("Player's inventory it too large to travel: " + player.getUniqueId().toString());
+            e.printStackTrace();
+            return;
+        }
+
+        sendToServer(player, linkWorld.getName());
+    }
+
     public static void sendToLink(Link link, LinkPlayer linkPlayer, LinkWorld linkWorld, LinkLocation linkLocation) {
         Player player = linkPlayer.getPlayer();
 

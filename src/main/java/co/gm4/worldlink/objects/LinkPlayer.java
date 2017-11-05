@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +23,11 @@ public class LinkPlayer {
     @Setter private boolean gettingTransferred;
     @Setter private LinkLocationType locationType;
 
+    @Setter private long lastLoginTime;
     @Setter private String advancementsJson;
     @Setter private String statsJson;
+
+    @Setter private String respawnLocation; // server name
 
     public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds) {
         this.uuid = uuid;
@@ -33,12 +35,13 @@ public class LinkPlayer {
         this.worlds = worlds;
     }
 
-    public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds, String advancementsJson, String statsJson) {
+    public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds, String advancementsJson, String statsJson, String respawnLocation) {
         this.uuid = uuid;
         this.playerData = playerData;
         this.worlds = worlds;
         this.advancementsJson = advancementsJson;
         this.statsJson = statsJson;
+        this.respawnLocation = respawnLocation;
     }
 
     public List<LinkWorld> getFilteredWorlds() {

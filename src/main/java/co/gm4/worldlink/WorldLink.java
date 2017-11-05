@@ -1,5 +1,6 @@
 package co.gm4.worldlink;
 
+import co.gm4.worldlink.commands.WorldCommand;
 import co.gm4.worldlink.listeners.PlayerListener;
 import co.gm4.worldlink.managers.DatabaseHandler;
 import co.gm4.worldlink.managers.PlayerManager;
@@ -43,6 +44,8 @@ public final class WorldLink extends JavaPlugin {
         playerManager = new PlayerManager();
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
+
+        getCommand("world").setExecutor(new WorldCommand());
     }
 
     private void init() {
