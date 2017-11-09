@@ -36,6 +36,18 @@ server:
     lore:
       - "Selector of worlds!"
 
+  # Location for the
+  default_spawn:
+
+    enabled: true
+
+    # %default% = main world of the server
+    # %same% = same world the player died in
+    world: world
+
+    # Leave as `~` if you want the same location they died at
+    location: "0.0, 100.0, 0.0, ~, ~"
+
 # Other worlds that players can travel to from this world
 links:
 
@@ -118,7 +130,6 @@ links:
 
       # The type of teleportation that will take place
       #
-
       # ABSOLUTE
       # - This will always teleport you to the coordinates and world provided
       #

@@ -3,6 +3,7 @@ package co.gm4.worldlink.objects;
 import co.gm4.worldlink.modules.display.Filter;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -12,22 +13,22 @@ import java.util.UUID;
 /**
  * Created by MatrixTunnel on 9/14/2017.
  */
-@Getter
+@Getter @Setter
 public class LinkPlayer {
 
     private UUID uuid;
-    @Setter private LinkPlayerData playerData;
-    @Setter private List<LinkWorld> worlds;
+    private LinkPlayerData playerData;
+    private List<LinkWorld> worlds;
 
-    @Setter private Player player;
-    @Setter private boolean gettingTransferred;
-    @Setter private LinkLocationType locationType;
+    private Player player;
+    private boolean gettingTransferred;
+    private LinkLocationType locationType;
 
-    @Setter private long lastLoginTime;
-    @Setter private String advancementsJson;
-    @Setter private String statsJson;
+    private String advancementsJson;
+    private String statsJson;
 
-    @Setter private String respawnLocation; // server name
+    private long lastLoginTime;
+    private Location lastDeathLocation;
 
     public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds) {
         this.uuid = uuid;
@@ -35,13 +36,12 @@ public class LinkPlayer {
         this.worlds = worlds;
     }
 
-    public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds, String advancementsJson, String statsJson, String respawnLocation) {
+    public LinkPlayer(UUID uuid, LinkPlayerData playerData, List<LinkWorld> worlds, String advancementsJson, String statsJson) {
         this.uuid = uuid;
         this.playerData = playerData;
         this.worlds = worlds;
         this.advancementsJson = advancementsJson;
         this.statsJson = statsJson;
-        this.respawnLocation = respawnLocation;
     }
 
     public List<LinkWorld> getFilteredWorlds() {

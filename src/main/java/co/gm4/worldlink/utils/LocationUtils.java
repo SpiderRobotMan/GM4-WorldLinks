@@ -1,14 +1,13 @@
 package co.gm4.worldlink.utils;
 
+import co.gm4.worldlink.objects.LinkLocation;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -132,6 +131,42 @@ public class LocationUtils {
         if (UNSAFE_BLOCKS.contains(belowFeetBlock.getType())) belowFeetBlock.setType(Material.DIRT);
 
         return location;
+    }
+
+    public static String locationToString(LinkLocation location) {
+        Map<String, Object> serialized = location.serialize();
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (String key : serialized.keySet()) {
+            builder.append(key + "=" + serialized.get(key));
+            if (i < serialized.size() - 1) {
+                builder.append(";");
+            }
+            i++;
+        }
+        return builder.toString();
+    }
+
+    public static String locationToString(Location location) {
+        return locationToString(new LinkLocation(location));
+    }
+
+    public static LinkLocation stringToLocation(String loc) {
+        System.out.println(loc);
+        Map<String, Object> serialized = new HashMap<>();
+        for (String param : loc.split(";")) {
+            String key = param.split("=")[0];
+            Object value;
+            if (key.equalsIgnoreCase("x") || key.equalsIgnoreCase("y") || key.equalsIgnoreCase("z")) {
+                value = Double.valueOf(param.split("=")[1]);
+            } else if (key.equalsIgnoreCase("yaw") || key.equalsIgnoreCase("pitch")) {
+                value = Float.valueOf(param.split("=")[1]);
+            } else {
+                value = param.split("=")[1];
+            }
+            serialized.put(key, value);
+        }
+        return LinkLocation.deserialize(serialized);
     }
 
 }

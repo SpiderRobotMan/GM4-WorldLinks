@@ -25,13 +25,30 @@ public class PlayerUtils {
         Config config = WorldLink.get().getPluginConfig();
         ItemStack configItem = config.getSelectorItem();
 
-        return !config.selectorItemHasToMatch() ?
-                handItem != null && configItem != null &&
-                handItem.hasItemMeta() && configItem.hasItemMeta() && (
-                        (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) ||
-                        (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) ||
-                        handItem.getType().equals(configItem.getType())
-                ) : configItem.isSimilar(handItem);
+        if (handItem == null || configItem == null) return false;
+
+        // Not adding other metadata because it's messing things up (maybe add back later)
+        // It looks a little messy but I'll fix that later ¯\_(ツ)_/¯
+        return (config.selectorItemHasToMatch() ? handItem.hasItemMeta() && configItem.hasItemMeta() && ( // Equals
+                (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() &&
+                        handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) && //Display name
+                (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
+                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) && //Lore
+                handItem.getType().equals(configItem.getType()) //Type
+        ) : handItem.hasItemMeta() && configItem.hasItemMeta() && ( // Similar
+                (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() &&
+                        handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) || //Display name
+                (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
+                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) || //Lore
+                handItem.getType().equals(configItem.getType()) //Type
+        ));
+
+        //return (config.selectorItemHasToMatch() ? handItem.isSimilar(configItem) :
+        //        handItem.hasItemMeta() && configItem.hasItemMeta() && (
+        //                (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) ||
+        //                (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() && handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) ||
+        //                handItem.getType().equals(configItem.getType())
+        //        ));
     }
 
     public static void updatePlayer(Player player, LinkPlayerData data, LinkLocationType locationType) {

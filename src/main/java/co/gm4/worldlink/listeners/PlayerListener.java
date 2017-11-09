@@ -8,22 +8,22 @@ import co.gm4.worldlink.utils.ServerUtils;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -120,26 +120,49 @@ public class PlayerListener implements Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onDeath(PlayerDeathEvent event) {
-        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getEntity());
-        if (linkPlayer.getRespawnLocation() != null) {
-            if (linkPlayer.getRespawnLocation().equals(WorldLink.get().getPluginConfig().getServerName())) {
-                if ((System.currentTimeMillis() - linkPlayer.getLastLoginTime()) < 1000) // Don't show death message if just logging in
-                    event.setDeathMessage("");
-                return;
+        WorldLink.get().getPlayerManager().getLinkPlayer(event.getEntity()).setLastDeathLocation(event.getEntity().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onRespawn(PlayerRespawnEvent event) {
+        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer());
+        LinkLocation respawnLocation = WorldLink.get().getDatabaseHandler().getRespawnLocation(event.getPlayer().getUniqueId());
+        Location deathLocation = linkPlayer.getLastDeathLocation();
+        String defaultSpawn = WorldLink.get().getPluginConfig().getDefaultSpawnLocation();
+
+        WorldLink.get().getLogger().info("Respawning player: " + event.getPlayer().getUniqueId().toString());
+
+        if (respawnLocation != null) {
+            if (respawnLocation.getWorld().equals(WorldLink.get().getPluginConfig().getServerName())) return;
+
+            event.getPlayer().setHealth(20);
+            ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(respawnLocation.getWorld()), respawnLocation, LinkLocationType.ABSOLUTE_SAFE);
+        } else if (deathLocation != null && !defaultSpawn.isEmpty()) {
+            List<String> defaultSpawnList = Arrays.stream(defaultSpawn.split(", ")).collect(Collectors.toList());
+            Location location = event.getRespawnLocation();
+
+            location.setWorld(Bukkit.getWorld(WorldLink.get().getPluginConfig().getDefaultSpawnWorld().replace("%same%", event.getRespawnLocation().getWorld().getName())));
+
+            if (defaultSpawnList.size() >= 3) {
+                location.setX(Double.parseDouble(defaultSpawnList.get(0).replace("~", String.valueOf(deathLocation.getX()))));
+                location.setY(Double.parseDouble(defaultSpawnList.get(1).replace("~", String.valueOf(deathLocation.getY()))));
+                location.setZ(Double.parseDouble(defaultSpawnList.get(2).replace("~", String.valueOf(deathLocation.getZ()))));
             }
 
-            if (!event.getKeepInventory()) event.getEntity().getInventory().clear();
-            ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(linkPlayer.getRespawnLocation()), new LinkLocation(linkPlayer.getPlayer().getLocation()), LinkLocationType.ABSOLUTE);
+            if (defaultSpawnList.size() == 5) {
+                location.setYaw(Float.valueOf(defaultSpawnList.get(3).replace("~", String.valueOf(deathLocation.getYaw()))));
+                location.setPitch(Float.valueOf(defaultSpawnList.get(4).replace("~", String.valueOf(deathLocation.getPitch()))));
+            }
         }
+
+        // Should spawn at world spawn if nothing is set
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSleep(PlayerBedEnterEvent event) {
-        if (event.isCancelled()) return;
-        LinkPlayer linkPlayer = WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer());
-        linkPlayer.setRespawnLocation(WorldLink.get().getPluginConfig().getServerName());
+        if (!event.isCancelled()) WorldLink.get().getDatabaseHandler().setRespawnLocation(event.getPlayer().getUniqueId(), event.getBed().getLocation());
     }
 
     @EventHandler
@@ -177,6 +200,7 @@ public class PlayerListener implements Listener {
         if (linkPlayer.getAdvancementsJson() != null) {
             writeFile(new File(Bukkit.getWorlds().get(0).getName() + "/advancements/" + linkPlayer.getUuid().toString() + ".json"), linkPlayer.getAdvancementsJson());
         }
+
         if (linkPlayer.getStatsJson() != null) {
             writeFile(new File(Bukkit.getWorlds().get(0).getName() + "/stats/" + linkPlayer.getUuid().toString() + ".json"), linkPlayer.getStatsJson());
         }

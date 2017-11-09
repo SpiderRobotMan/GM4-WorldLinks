@@ -5,6 +5,7 @@ import co.gm4.worldlink.modules.triggers.Advancement;
 import co.gm4.worldlink.objects.Link;
 import co.gm4.worldlink.objects.LinkLocation;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,6 +33,9 @@ public class Config {
     private final ItemStack selectorItem;
     private final boolean selectorItemHasToMatch;
 
+    private final String defaultSpawnWorld;
+    private final String defaultSpawnLocation;
+
     private final List<Link> links;
 
     public Config() {
@@ -48,6 +52,15 @@ public class Config {
 
         selectorItem = getSelectorItem(config.getString("server.selector.material", "STICK"), (short) config.getInt("server.selector.data", 0), config.getString("server.selector.display_name", "World Selector"), config.getStringList("server.selector.lore"));
         selectorItemHasToMatch = config.getBoolean("server.selector.exact_match");
+
+
+        if (config.getBoolean("server.default_spawn.enabled", false)) {
+            defaultSpawnWorld = config.getString("server.default_spawn.world", Bukkit.getWorlds().get(0).getName()).replace("default", Bukkit.getWorlds().get(0).getName()); // Replaced %same% in respawn event
+            defaultSpawnLocation = config.getString("server.default_spawn.location", "0.0, 0.0, 0.0");
+        } else {
+            defaultSpawnWorld = Bukkit.getWorlds().get(0).getName();
+            defaultSpawnLocation = "";
+        }
 
         links = new ArrayList<>();
 

@@ -1,14 +1,12 @@
 package co.gm4.worldlink.managers;
 
 import co.gm4.worldlink.WorldLink;
-import co.gm4.worldlink.objects.LinkLocationType;
-import co.gm4.worldlink.objects.LinkPlayer;
-import co.gm4.worldlink.objects.LinkPlayerData;
-import co.gm4.worldlink.objects.LinkWorld;
+import co.gm4.worldlink.objects.*;
 import co.gm4.worldlink.utils.LocationUtils;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
+import org.bukkit.Location;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -62,7 +60,7 @@ public class DatabaseHandler {
                             + "`unlockedWorlds` VARCHAR(1000) NULL DEFAULT NULL,"
                             + "`advancements` MEDIUMBLOB NULL DEFAULT NULL, "
                             + "`stats` MEDIUMBLOB NULL DEFAULT NULL,"
-                            + "`respawnLocation` VARCHAR(32) NULL DEFAULT NULL"
+                            + "`respawnLocation` VARCHAR(128) NULL DEFAULT NULL"
                             + ");");
             // This MySQL user will not have perms for this: "SET GLOBAL max_allowed_packet = 65535;" // 1024 * 64
 
@@ -94,7 +92,7 @@ public class DatabaseHandler {
 
             String respawnLocation = res.getString(8);
 
-            LinkPlayer linkPlayer = new LinkPlayer(uuid, (playerdata == null ? null : new Gson().fromJson(playerdata, LinkPlayerData.class)), stringToWorlds(unlockedWorlds), advancements, stats, respawnLocation);
+            LinkPlayer linkPlayer = new LinkPlayer(uuid, (playerdata == null ? null : new Gson().fromJson(playerdata, LinkPlayerData.class)), stringToWorlds(unlockedWorlds), advancements, stats);
 
             if (locType != null && !locType.isEmpty()) {
                 LinkLocationType locationType = LinkLocationType.getByConfigName(locType);
@@ -137,7 +135,7 @@ public class DatabaseHandler {
             String worlds = worldsToString(uuid);
 
             Connection connection = this.getHikari().getConnection();
-            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=?,`teleportType`=?,`unlockedWorlds`=?,`advancements`=?,`stats`=?,`respawnLocation`=? WHERE `uuid`=?;");
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `playerdata`=?,`teleportType`=?,`unlockedWorlds`=?,`advancements`=?,`stats`=? WHERE `uuid`=?;");
             if (linkPlayer.getPlayerData() != null && !linkPlayer.getPlayerData().getAsJson().isEmpty()) {
                 ps.setString(1, linkPlayer.getPlayerData().getAsJson());
             } else {
@@ -163,13 +161,8 @@ public class DatabaseHandler {
             } else {
                 ps.setNull(5, Types.BLOB);
             }
-            if (linkPlayer.getRespawnLocation() != null && !linkPlayer.getRespawnLocation().isEmpty()) {
-                ps.setString(6, linkPlayer.getRespawnLocation());
-            } else {
-                ps.setNull(6, Types.VARCHAR);
-            }
 
-            ps.setString(7, uuid.toString());
+            ps.setString(6, uuid.toString());
 
             ps.executeUpdate();
 
@@ -188,18 +181,13 @@ public class DatabaseHandler {
             String worlds = worldsToString(uuid);
 
             Connection connection = this.getHikari().getConnection();
-            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `unlockedWorlds`=?,`respawnLocation`=? WHERE `uuid`=?;");
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `unlockedWorlds`=? WHERE `uuid`=?;");
             if (worlds != null && !worlds.isEmpty()) {
                 ps.setString(1, worlds);
             } else {
                 ps.setNull(1, Types.VARCHAR);
             }
-            if (linkPlayer.getRespawnLocation() != null && !linkPlayer.getRespawnLocation().isEmpty()) {
-                ps.setString(2, linkPlayer.getRespawnLocation());
-            } else {
-                ps.setNull(2, Types.VARCHAR);
-            }
-            ps.setString(3, uuid.toString());
+            ps.setString(2, uuid.toString());
 
             ps.executeUpdate();
 
@@ -243,6 +231,68 @@ public class DatabaseHandler {
         } catch (SQLException e) {
             WorldLink.get().getLogger().warning("Failed to clear player data: " + uuid.toString());
             e.printStackTrace();
+        }
+    }
+
+    public LinkLocation getRespawnLocation(UUID uuid) {
+        try {
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT `respawnLocation` FROM `link_players` WHERE `uuid`=?;");
+            ps.setString(1, uuid.toString());
+
+            ResultSet res = ps.executeQuery();
+
+            if (res.next()) {
+
+                String respawnLocation = res.getString(1);
+
+                ps.close();
+                res.close();
+                connection.close();
+
+                return LocationUtils.stringToLocation(respawnLocation);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to get respawn location for: " + uuid.toString());
+            return null;
+        }
+    }
+
+    public void setRespawnLocation(UUID uuid, Location location) {
+        try {
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `respawnLocation`=? WHERE `uuid`=?;");
+            if (location != null) {
+                ps.setString(1, LocationUtils.locationToString(location));
+            } else {
+                ps.setNull(1, Types.VARCHAR);
+            }
+            ps.setString(2, uuid.toString());
+
+            ps.executeUpdate();
+
+            ps.close();
+            connection.close();
+        } catch (SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to set respawn location for: " + uuid.toString());
+            e.printStackTrace();
+        }
+    }
+
+    public void removeRespawnLocations(Location location) {
+        try {
+            Connection connection = this.getHikari().getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE `link_players` SET `respawnLocation`=NULL WHERE `respawnLocation`=?;");
+            ps.setString(1, LocationUtils.locationToString(location)); // location.getBlock().getLocation() rounds the location
+
+            ps.executeUpdate();
+
+            ps.close();
+            connection.close();
+        } catch (SQLException e) {
+            WorldLink.get().getLogger().warning("Failed to remove respawn locations from database: " + LocationUtils.locationToString(location));
         }
     }
 
