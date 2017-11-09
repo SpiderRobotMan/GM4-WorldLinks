@@ -155,6 +155,12 @@ public class PlayerListener implements Listener {
                 location.setYaw(Float.valueOf(defaultSpawnList.get(3).replace("~", String.valueOf(deathLocation.getYaw()))));
                 location.setPitch(Float.valueOf(defaultSpawnList.get(4).replace("~", String.valueOf(deathLocation.getPitch()))));
             }
+
+            String serverName = WorldLink.get().getPluginConfig().getDefaultSpawnServer();
+            if (!serverName.isEmpty() && !serverName.equals("%same%")) {
+                event.getPlayer().setHealth(20);
+                ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(serverName), new LinkLocation(location), LinkLocationType.ABSOLUTE_SAFE);
+            }
         }
 
         // Should spawn at world spawn if nothing is set

@@ -41,7 +41,10 @@ server:
 
     enabled: true
 
-    # %default% = main world of the server
+    # %same% = same server the player died in
+    server: %same%
+
+    # %default% = main world of the server they died in
     # %same% = same world the player died in
     world: world
 

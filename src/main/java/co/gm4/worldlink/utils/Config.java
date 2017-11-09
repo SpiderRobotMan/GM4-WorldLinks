@@ -33,6 +33,7 @@ public class Config {
     private final ItemStack selectorItem;
     private final boolean selectorItemHasToMatch;
 
+    private final String defaultSpawnServer;
     private final String defaultSpawnWorld;
     private final String defaultSpawnLocation;
 
@@ -55,9 +56,11 @@ public class Config {
 
 
         if (config.getBoolean("server.default_spawn.enabled", false)) {
+            defaultSpawnServer = config.getString("server.default_spawn.server", "%same%");
             defaultSpawnWorld = config.getString("server.default_spawn.world", Bukkit.getWorlds().get(0).getName()).replace("default", Bukkit.getWorlds().get(0).getName()); // Replaced %same% in respawn event
             defaultSpawnLocation = config.getString("server.default_spawn.location", "0.0, 0.0, 0.0");
         } else {
+            defaultSpawnServer = "";
             defaultSpawnWorld = Bukkit.getWorlds().get(0).getName();
             defaultSpawnLocation = "";
         }
