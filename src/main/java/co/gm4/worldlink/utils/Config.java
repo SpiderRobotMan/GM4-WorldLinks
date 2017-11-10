@@ -57,7 +57,7 @@ public class Config {
 
         if (config.getBoolean("server.default_spawn.enabled", false)) {
             defaultSpawnServer = config.getString("server.default_spawn.server", "%same%");
-            defaultSpawnWorld = config.getString("server.default_spawn.world", Bukkit.getWorlds().get(0).getName()).replace("default", Bukkit.getWorlds().get(0).getName()); // Replaced %same% in respawn event
+            defaultSpawnWorld = config.getString("server.default_spawn.world", Bukkit.getWorlds().get(0).getName()).replace("%default%", Bukkit.getWorlds().get(0).getName()); // Replaced %same% in respawn event
             defaultSpawnLocation = config.getString("server.default_spawn.location", "0.0, 0.0, 0.0");
         } else {
             defaultSpawnServer = "";
@@ -97,7 +97,7 @@ public class Config {
                     link.setDisplayOffsetY(Double.parseDouble(displayOffsetList.get(1)));
                     link.setDisplayOffsetZ(Double.parseDouble(displayOffsetList.get(2)));
                 }
-                link.setDisplaySpeed(config.getInt("links." + s + ".effects.particles.display.speed", 0));
+                link.setDisplaySpeed(config.getDouble("links." + s + ".effects.particles.display.speed", 0.0));
                 link.setDisplayCount(config.getInt("links." + s + ".effects.particles.display.count", 1));
 
                 if (config.getConfigurationSection("links." + s + ".effects.particles.hover") != null) {
@@ -115,6 +115,8 @@ public class Config {
             }
 
             if (config.getConfigurationSection("links." + s + ".teleportation") != null) {
+                link.setResetRespawnLocation(config.getBoolean("links." + s + ".teleportation.clear_respawn", false));
+
                 link.setTeleportType(config.getString("links." + s + ".teleportation.type", "ABSOLUTE"));
 
                 String world = config.getString("links." + s + ".teleportation.location.world", "world");

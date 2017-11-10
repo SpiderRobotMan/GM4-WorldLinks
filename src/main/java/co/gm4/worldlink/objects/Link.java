@@ -22,8 +22,8 @@ public class Link {
     private boolean zoomOnClick, blindnessOnClick, portalSoundOnClick;
 
     private String displayType;
-    private double displayOffsetX, displayOffsetY, displayOffsetZ;
-    private int displayCount, displaySpeed;
+    private double displayOffsetX, displayOffsetY, displayOffsetZ, displaySpeed;
+    private int displayCount;
 
     private String hoverType;
     private double hoverOffsetX, hoverOffsetY, hoverOffsetZ;
@@ -31,6 +31,7 @@ public class Link {
 
     private LinkLocation targetLocation;
     private String teleportType;
+    private boolean resetRespawnLocation;
 
     private List<String> beforeCommands, duringCommands, afterCommands;
 

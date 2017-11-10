@@ -9,9 +9,11 @@ import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 
@@ -118,6 +120,14 @@ public class PlayerListener implements Listener {
                 e.printStackTrace();
             }
         });
+    }
+
+    @EventHandler
+    public void onHurt(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player &&
+                (System.currentTimeMillis() - WorldLink.get().getPlayerManager().getLinkPlayer(((Player) event.getEntity()).getPlayer()).getLastLoginTime()) < 15000) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

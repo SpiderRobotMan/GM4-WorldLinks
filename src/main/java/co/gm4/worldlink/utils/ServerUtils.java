@@ -97,6 +97,7 @@ public class ServerUtils {
 
         try {
             WorldLink.get().getDatabaseHandler().savePlayer(player.getUniqueId());
+            if (link.isResetRespawnLocation()) WorldLink.get().getDatabaseHandler().setRespawnLocation(player.getUniqueId(), null);
         } catch (SQLException e) {
             player.sendMessage(ChatColor.RED + "You're too heavy for the universe to pick you up! Empty your inventory to travel.");
             WorldLink.get().getLogger().warning("Player's inventory it too large to travel: " + player.getUniqueId().toString());

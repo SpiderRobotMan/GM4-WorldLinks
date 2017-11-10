@@ -1,6 +1,7 @@
 package co.gm4.worldlink.commands;
 
 import co.gm4.worldlink.WorldLink;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,7 +14,14 @@ public class ReloadCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        WorldLink.get().reload();
+        try {
+            WorldLink.get().reload();
+        } catch (Exception ignore) {
+            Bukkit.getPluginManager().disablePlugin(WorldLink.get());
+            sender.sendMessage(ChatColor.RED + "Failed to reload config! Disabling plugin to prevent problems"); //TODO Change this
+            return true;
+        }
+
         sender.sendMessage(ChatColor.GREEN + "WorldLink reloaded!");
         return true;
     }

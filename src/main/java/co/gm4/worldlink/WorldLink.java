@@ -41,7 +41,12 @@ public final class WorldLink extends JavaPlugin {
 
         modules = new ArrayList<>();
 
-        init();
+        try {
+            init();
+        } catch (Exception e) {
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         playerManager = new PlayerManager();
 
@@ -49,33 +54,29 @@ public final class WorldLink extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new BlockListener(), this);
 
         getCommand("world").setExecutor(new WorldCommand());
-        getCommand("reload").setExecutor(new ReloadCommand());
+        getCommand("wlreload").setExecutor(new ReloadCommand()); //TODO Change this junk command
     }
 
-    private void init() {
-        try {
-            pluginConfig = new Config();
-            serverName = pluginConfig.getServerName();
+    private void init() throws Exception {
+        pluginConfig = new Config();
+        serverName = pluginConfig.getServerName();
 
-            Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
-            displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
+        Bukkit.getPluginManager().registerEvents(displayTask = new DisplayTask(), this);
+        displayTaskRunnable = Bukkit.getScheduler().runTaskTimer(WorldLink.get(), displayTask, 0L, 3L);
 
-            databaseHandler = new DatabaseHandler(
-                    pluginConfig.getDatabaseHost(),
-                    pluginConfig.getDatabaseDatabase(),
-                    pluginConfig.getDatabaseUsername(),
-                    pluginConfig.getDatabasePassword()
-            );
+        databaseHandler = new DatabaseHandler(
+                pluginConfig.getDatabaseHost(),
+                pluginConfig.getDatabaseDatabase(),
+                pluginConfig.getDatabaseUsername(),
+                pluginConfig.getDatabasePassword()
+        );
 
-            modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
+        modules.forEach(module -> Bukkit.getPluginManager().registerEvents((Listener) module, this));
 
-            Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        } catch (Exception e) {
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
+        Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
     }
 
-    public void reload() {
+    public void reload() throws Exception {
         onDisable();
 
         init();

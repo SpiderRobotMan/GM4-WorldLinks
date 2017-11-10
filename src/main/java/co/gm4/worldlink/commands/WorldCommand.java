@@ -28,7 +28,7 @@ public class WorldCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.YELLOW + "Sending you to world " + ChatColor.AQUA + args[0] + ChatColor.YELLOW + "!");
             LinkLocation location = new LinkLocation(player.getLocation());
             location.setWorld(args[0]);
-            ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(args[0]), location, LinkLocationType.RELATIVE);
+            ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(args[0]), location, LinkLocationType.ABSOLUTE_SAFE);
             return true;
         }
 

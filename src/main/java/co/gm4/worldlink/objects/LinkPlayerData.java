@@ -12,8 +12,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by MatrixTunnel on 9/10/2017.
@@ -40,6 +40,7 @@ public class LinkPlayerData {
     private final boolean flying;
     private final boolean gliding;
     private final float fallDistance;
+    private final Set<String> scoreboardTags;
 
     public LinkPlayerData(Player player) {
         this.gamemode = player.getGameMode();
@@ -65,6 +66,7 @@ public class LinkPlayerData {
         this.flying = player.isFlying();
         this.gliding = player.isGliding();
         this.fallDistance = player.getFallDistance();
+        this.scoreboardTags = player.getScoreboardTags();
     }
 
     public Location getLocation() {

@@ -42,11 +42,13 @@ server:
     enabled: true
 
     # %same% = same server the player died in
-    server: %same%
+    server: "%same%"
 
+    # If the server is different then the current one, set this as the world name in the other server
+    #
     # %default% = main world of the server they died in
     # %same% = same world the player died in
-    world: world
+    world: "world"
 
     # Leave as `~` if you want the same location they died at
     location: "0.0, 100.0, 0.0, ~, ~"
@@ -93,6 +95,7 @@ links:
       time: ""
 
     # Effects of the world particle
+    # Add further customization with "before" commands if you want to add other stuff on click (located under teleportation)
     effects:
 
       # Zoom in on click (adds slowness)
@@ -104,10 +107,6 @@ links:
       # TODO Play portal sound on click
       sound: true
 
-      # -----
-      # Add further customization with "before" commands if you want to add other stuff on click (located under teleportation)
-      # -----
-
       # Particles that will show for the world particle
       particles:
 
@@ -117,7 +116,7 @@ links:
 
           type: "FLAME"
           offset: "0.0, 0.0, 0.0"
-          speed: 0
+          speed: 0.0
           count: 1
 
         # The particle that will display when hovering over the world particle
@@ -125,11 +124,14 @@ links:
 
           type: "PORTAL"
           offset: "0.0, 0.0, 0.0"
-          speed: 0
+          speed: 0.0
           count: 1
 
     # Events that will take place when teleporting to the other world
     teleportation:
+
+      # Clears the player's respawn data when they connect to the server using the world selector
+      clear_respawn: false
 
       # The type of teleportation that will take place
       #

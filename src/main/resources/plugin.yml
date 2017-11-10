@@ -1,14 +1,20 @@
 name: WorldLink
 version: ${project.version}
 main: co.gm4.worldlink.WorldLink
-authors: [theminecoder, MatrixTunnel]
+authors: [MatrixTunnel, theminecoder]
 
 commands:
   world:
     description: Allows you to connect to the different worlds
     permission: gm4.command.world
     usage: /world <name>
+  wlreload:
+    description: Reloads the config of WorldLink
+    permission: gm4.command.reload
+    usage: /wlreload
 
 permissions:
   gm4.command.world:
+    default: op
+  gm4.command.reload:
     default: op

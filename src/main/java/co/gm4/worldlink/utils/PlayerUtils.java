@@ -25,6 +25,13 @@ public class PlayerUtils {
         Config config = WorldLink.get().getPluginConfig();
         ItemStack configItem = config.getSelectorItem();
 
+        return handItem != null && configItem != null && isHoldingWorldLinkItem(handItem);
+    }
+
+    public static boolean isHoldingWorldLinkItem(ItemStack handItem) {
+        Config config = WorldLink.get().getPluginConfig();
+        ItemStack configItem = config.getSelectorItem();
+
         if (handItem == null || configItem == null) return false;
 
         // Not adding other metadata because it's messing things up (maybe add back later)
@@ -32,15 +39,15 @@ public class PlayerUtils {
         return (config.selectorItemHasToMatch() ? handItem.hasItemMeta() && configItem.hasItemMeta() && ( // Equals
                 (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() &&
                         handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) && //Display name
-                (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
-                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) && //Lore
-                handItem.getType().equals(configItem.getType()) //Type
+                        (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
+                                handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) && //Lore
+                        handItem.getType().equals(configItem.getType()) //Type
         ) : handItem.hasItemMeta() && configItem.hasItemMeta() && ( // Similar
                 (configItem.getItemMeta().hasDisplayName() && handItem.getItemMeta().hasDisplayName() &&
                         handItem.getItemMeta().getDisplayName().equals(configItem.getItemMeta().getDisplayName())) || //Display name
-                (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
-                        handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) || //Lore
-                handItem.getType().equals(configItem.getType()) //Type
+                        (configItem.getItemMeta().hasLore() && handItem.getItemMeta().hasLore() &&
+                                handItem.getItemMeta().getLore().equals(configItem.getItemMeta().getLore())) || //Lore
+                        handItem.getType().equals(configItem.getType()) //Type
         ));
 
         //return (config.selectorItemHasToMatch() ? handItem.isSimilar(configItem) :
@@ -111,6 +118,7 @@ public class PlayerUtils {
 
                 player.setFlying(data.isFlying());
                 player.setGliding(data.isGliding());
+                player.getScoreboardTags().addAll(data.getScoreboardTags());
 
                 player.getInventory().setHeldItemSlot(data.getHeldItemSlot());
                 player.updateInventory();
@@ -122,6 +130,7 @@ public class PlayerUtils {
 
     private static void resetPlayer(Player player) {
         if (player.isOnline()) {
+            player.getScoreboardTags().clear();
             player.getInventory().clear();
             player.getEnderChest().clear();
             player.getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR)});

@@ -138,7 +138,7 @@ public class LocationUtils {
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for (String key : serialized.keySet()) {
-            builder.append(key + "=" + serialized.get(key));
+            builder.append(key).append("=").append(serialized.get(key));
             if (i < serialized.size() - 1) {
                 builder.append(";");
             }
@@ -152,7 +152,7 @@ public class LocationUtils {
     }
 
     public static LinkLocation stringToLocation(String loc) {
-        System.out.println(loc);
+        if (loc == null) return null;
         Map<String, Object> serialized = new HashMap<>();
         for (String param : loc.split(";")) {
             String key = param.split("=")[0];
