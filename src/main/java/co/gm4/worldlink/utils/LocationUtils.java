@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,73 +12,44 @@ import java.util.stream.Collectors;
 /**
  * Created by MatrixTunnel on 9/13/2017.
  *
- * @author theminecoder
+ * @author MatrixTunnel & SpiderRobotMan
  */
 public class LocationUtils {
 
-    /**
-     * Auto generated list of unsafe block to spawn on.
-     */
-    public static final ImmutableList<Material> UNSAFE_BLOCKS = ImmutableList.copyOf(Arrays.stream(Material.values()).filter(material -> {
-        String name = material.name();
-        return (material.isTransparent() && !name.contains("LEAVES")) || name.endsWith("LAVA") || name.endsWith("WATER");
-    }).collect(Collectors.toList()));
+    private static final ImmutableList<Material> UNBREAKABLE_BLOCKS = ImmutableList.copyOf(Arrays.asList(Material.BEDROCK, Material.COMMAND, Material.COMMAND_CHAIN,
+            Material.COMMAND_REPEATING, Material.BARRIER, Material.END_GATEWAY, Material.ENDER_PORTAL_FRAME, Material.ENDER_PORTAL, Material.PORTAL));
 
-    public static final List<Material> UNBREAKABLE_BLOCKS = Arrays.asList(Material.BEDROCK, Material.COMMAND, Material.COMMAND_CHAIN,
-            Material.COMMAND_REPEATING, Material.BARRIER, Material.END_GATEWAY, Material.ENDER_PORTAL_FRAME, Material.ENDER_PORTAL, Material.PORTAL);
+    private static final ImmutableList<Material> UNSAFE_WITHIN = ImmutableList.copyOf(Arrays.stream(Material.values()).filter(material ->
+            (material.isSolid() || material.hasGravity() || material.name().endsWith("WATER") || material.name().endsWith("LAVA")))
+            .collect(Collectors.toList()));
 
-    private static boolean isSafe(Location location) {
-        return UNSAFE_BLOCKS.contains(location.getBlock().getType()) && UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.UP).getType()) && !UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType());
+    private static final ImmutableList<Material> UNSAFE_UNDER = ImmutableList.copyOf(Arrays.stream(Material.values()).filter(material ->
+            ((material.isTransparent() && !(material.name().contains("LEAVES") || material.name().contains("ICE") || material == Material.SLIME_BLOCK)) || material.name().endsWith("WATER") || material.name().endsWith("LAVA")))
+            .collect(Collectors.toList()));
 
-        //if (UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType()) || location.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK) {
-        //    return false;
-        //}
+    private static final ImmutableList<Material> UNSAFE_FORCE = ImmutableList.copyOf(Arrays.stream(Material.values()).filter(material ->
+            (material.name().contains("LAVA") || material.name().contains("WATER") || material.hasGravity() || UNBREAKABLE_BLOCKS.contains(material)))
+            .collect(Collectors.toList()));
 
-        //if (location.getBlock().getType().isSolid() || !location.getBlock().getType().isTransparent() || location.getBlock().getType().name().endsWith("LAVA")) {
-
-        //}
-
-        //if (
-        //        location.getBlock().getRelative(BlockFace.UP).getType().isSolid() ||
-        //                !location.getBlock().getRelative(BlockFace.UP).getType().isTransparent() ||
-        //                location.getBlock().getRelative(BlockFace.UP).getType().name().endsWith("LAVA") ||
-        //                location.getBlock().getType().name().endsWith("WATER")
-        //        ) {
-
-        //}
-
-
-        //return !(UNSAFE_BLOCKS.contains(location.getBlock().getRelative(BlockFace.DOWN).getType()) || location.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK) && !(location.getBlock().getType().isSolid() || !location.getBlock().getType().isTransparent() || location.getBlock().getType().name().endsWith("LAVA")) && !(location.getBlock().getRelative(BlockFace.UP).getType().isSolid() || !location.getBlock().getRelative(BlockFace.UP).getType().isTransparent() || location.getBlock().getRelative(BlockFace.UP).getType().name().endsWith("LAVA") || location.getBlock().getType().name().endsWith("WATER"));
-    }
-
-    /**
-     * Search for a safe location in radius increments to ensure we are as close to the original location as possible.
-     *
-     * @param location
-     * @param maxRadius
-     * @param maxYRadius
-     * @return
-     */
-    public static Location getSafeLocation(Location location, int maxRadius, int maxYRadius) {
-        location = new Location(location.getWorld(), Math.floor(location.getX()) + 0.5D, Math.floor(location.getY()) + 0.5D, Math.floor(location.getZ()) + 0.5D, location.getYaw(), location.getPitch());
-        Block headBlock = location.getBlock().getRelative(BlockFace.UP);
-        Block feetBlock = location.getBlock();
-        Block belowFeetBlock = location.getBlock().getRelative(BlockFace.DOWN);
-
-        if (isSafe(location)) return location;
+    public static Location getSafeLocation(Location starting, int maxRadius, int maxYRadius) {
+        Location newLocation = new Location(starting.getWorld(), Math.floor(starting.getX()) + 0.5D, Math.floor(starting.getY()), Math.floor(starting.getZ()) + 0.5D, starting.getYaw(), starting.getPitch());
+        if (isLocationSafe(newLocation)) return newLocation;
 
         List<Location> safeLocations = new ArrayList<>();
-        Location closest = null;
+        List<Location> safeForce = new ArrayList<>();
 
         // Search for nearest safe zone within radius.
         for (int x = -(maxRadius); x <= maxRadius; x++) {
             for (int z = -(maxRadius); z <= maxRadius; z++) {
                 for (int y = -(maxYRadius); y <= maxYRadius; y++) {
-                    Location search = location.getBlock().getRelative(x, y, z).getLocation();
-                    if (isSafe(search)) {
-                        search.setYaw(location.getYaw());
-                        search.setPitch(location.getPitch());
-                        safeLocations.add(search.add(0.5, 0.5, 0.5));
+                    Location search = new Location(newLocation.getWorld(), newLocation.getX() + x, newLocation.getY() + y, newLocation.getZ() + z);
+                    if (isLocationSafe(search)) {
+                        search.setYaw(newLocation.getYaw());
+                        search.setPitch(newLocation.getPitch());
+                        safeLocations.add(search);
+                    }
+                    if (isLocationSafeForce(search)) {
+                        safeForce.add(search);
                     }
                 }
             }
@@ -87,50 +57,83 @@ public class LocationUtils {
 
         // Get the closest safe location
         if (!safeLocations.isEmpty()) {
-            for (Location safeLocation : safeLocations) {
-                if (closest == null) {
-                    closest = safeLocation;
-                    continue;
-                }
-                if (closest.distance(location) > safeLocation.distance(location)) {
-                    closest = safeLocation;
-                }
-            }
-            return closest;
+            return getClosestLocation(safeLocations, newLocation);
         }
 
         // Search for nearest ground below
-        for (int y = -1; y >= -(location.getBlockY()); y--) {
-            Location search = location.getBlock().getRelative(0, y, 0).getLocation();
+        for (int y = -1; y >= -(newLocation.getBlockY()); y--) {
+            Location search = new Location(newLocation.getWorld(), newLocation.getX(), newLocation.getY() + y, newLocation.getZ());
 
-            if (isSafe(search)) {
-                search.setYaw(location.getYaw());
-                search.setPitch(location.getPitch());
-                return search.add(0.5, 0.5, 0.5);
+            if (isLocationSafe(search)) {
+                search.setYaw(newLocation.getYaw());
+                search.setPitch(newLocation.getPitch());
+                return search;
+            }
+
+            if (isLocationSafeForce(search)) {
+                safeForce.add(search);
             }
         }
 
         // Search for nearest ground above
-        for (int y = 1; y <= 255 - location.getBlockY(); y++) {
-            Location search = location.getBlock().getRelative(0, y, 0).getLocation();
+        for (int y = 1; y <= 255 - newLocation.getBlockY(); y++) {
+            Location search = new Location(newLocation.getWorld(), newLocation.getX(), newLocation.getY() + y, newLocation.getZ());
 
-            if (isSafe(search)) {
-                search.setYaw(location.getYaw());
-                search.setPitch(location.getPitch());
-                return search.add(0.5, 0.5, 0.5);
+            if (isLocationSafe(search)) {
+                search.setYaw(newLocation.getYaw());
+                search.setPitch(newLocation.getPitch());
+                return search;
+            }
+
+            if (isLocationSafeForce(search)) {
+                safeForce.add(search);
             }
         }
 
         // Make safe space
-        if (UNBREAKABLE_BLOCKS.contains(headBlock.getType())) headBlock.setType(Material.AIR);
-        else headBlock.breakNaturally();
+        if (!safeForce.isEmpty()) {
+            newLocation = getClosestLocation(safeForce, newLocation);
+        }
 
-        if (UNBREAKABLE_BLOCKS.contains(feetBlock.getType())) feetBlock.setType(Material.AIR);
-        else feetBlock.breakNaturally();
+        Block under = newLocation.getBlock().getRelative(0, -1, 0);
+        Block feet = newLocation.getBlock();
+        Block head = newLocation.getBlock().getRelative(0, 1, 0);
 
-        if (UNSAFE_BLOCKS.contains(belowFeetBlock.getType())) belowFeetBlock.setType(Material.DIRT);
+        if (UNSAFE_UNDER.contains(under.getType())) under.setType(Material.DIRT);
 
-        return location;
+        if (UNSAFE_WITHIN.contains(feet.getType())) feet.breakNaturally();
+
+        if (UNSAFE_WITHIN.contains(head.getType())) head.breakNaturally();
+
+        return newLocation;
+    }
+
+    public static boolean isLocationSafe(Location location) {
+        Block under = location.getBlock().getRelative(0, -1, 0);
+        Block feet = location.getBlock();
+        Block head = location.getBlock().getRelative(0, 1, 0);
+        Block above = location.getBlock().getRelative(0, 2, 0);
+        return !UNSAFE_UNDER.contains(under.getType()) && !UNSAFE_WITHIN.contains(feet.getType()) && !UNSAFE_WITHIN.contains(head.getType()) && !UNSAFE_WITHIN.contains(above.getType());
+    }
+
+    public static boolean isLocationSafeForce(Location location) {
+        Block feet = location.getBlock();
+        Block head = location.getBlock().getRelative(0, 1, 0);
+        Block above = location.getBlock().getRelative(0, 2, 0);
+        return !UNSAFE_FORCE.contains(feet.getType()) && !UNSAFE_FORCE.contains(head.getType()) && !UNSAFE_FORCE.contains(above.getType());
+    }
+
+    public static Location getClosestLocation(List<Location> list, Location starting) {
+        Location closest = null;
+
+        for (Location location : list) {
+            if (closest == null) {
+                closest = location;
+                continue;
+            }
+            if (closest.distance(starting) > location.distance(starting)) closest = location;
+        }
+        return closest;
     }
 
     public static String locationToString(LinkLocation location) {

@@ -9,11 +9,12 @@ import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 
@@ -30,9 +31,11 @@ import java.util.stream.Collectors;
 /**
  * Created by MatrixTunnel on 9/10/2017.
  */
+@Getter
 public class PlayerListener implements Listener {
 
-    @Getter private List<QueuedJoin> queuedJoins = new ArrayList<>();
+    private List<QueuedJoin> queuedJoins = new ArrayList<>();
+    private List<UUID> notMoved = new ArrayList<>();
 
     public PlayerListener() {
         //empty queued joins when the connection didn't follow through for an unknown reason.
@@ -113,6 +116,7 @@ public class PlayerListener implements Listener {
         }
 
         queuedJoins.remove(queuedJoin);
+        if (!notMoved.contains(event.getPlayer().getUniqueId())) notMoved.add(event.getPlayer().getUniqueId());
         WorldLink.get().getServer().getScheduler().runTaskAsynchronously(WorldLink.get(), () -> {
             try {
                 database.savePlayer(event.getPlayer().getUniqueId());
@@ -123,11 +127,15 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onHurt(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player &&
-                (System.currentTimeMillis() - WorldLink.get().getPlayerManager().getLinkPlayer(((Player) event.getEntity()).getPlayer()).getLastLoginTime()) < 15000) {
+    public void onHurt(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player && notMoved.contains(((Player) event.getEntity()).getPlayer().getUniqueId())) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        if (notMoved.contains(event.getPlayer().getUniqueId())) notMoved.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -147,11 +155,11 @@ public class PlayerListener implements Listener {
         if (respawnLocation != null) {
             if (respawnLocation.getWorld().equals(WorldLink.get().getPluginConfig().getServerName())) return;
 
-            event.getPlayer().setHealth(20);
+            respawnPlayer(linkPlayer.getPlayer());
             ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(respawnLocation.getWorld()), respawnLocation, LinkLocationType.ABSOLUTE_SAFE);
         } else if (deathLocation != null && !defaultSpawn.isEmpty()) {
             List<String> defaultSpawnList = Arrays.stream(defaultSpawn.split(", ")).collect(Collectors.toList());
-            Location location = event.getRespawnLocation();
+            Location location = event.getRespawnLocation().clone();
 
             location.setWorld(Bukkit.getWorld(WorldLink.get().getPluginConfig().getDefaultSpawnWorld().replace("%same%", event.getRespawnLocation().getWorld().getName())));
 
@@ -168,12 +176,19 @@ public class PlayerListener implements Listener {
 
             String serverName = WorldLink.get().getPluginConfig().getDefaultSpawnServer();
             if (!serverName.isEmpty() && !serverName.equals("%same%")) {
-                event.getPlayer().setHealth(20);
+                respawnPlayer(linkPlayer.getPlayer());
                 ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(serverName), new LinkLocation(location), LinkLocationType.ABSOLUTE_SAFE);
             }
         }
 
         // Should spawn at world spawn if nothing is set
+    }
+
+    private void respawnPlayer(Player player) {
+        player.setFireTicks(0);
+        player.setFallDistance(0f);
+        player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -184,6 +199,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         WorldLink.get().getServer().getScheduler().runTaskAsynchronously(WorldLink.get(), () -> {
+            if (notMoved.contains(event.getPlayer().getUniqueId())) notMoved.remove(event.getPlayer().getUniqueId());
             if (WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer()).getPlayerData() == null) WorldLink.get().getDatabaseHandler().savePlayerWorlds(event.getPlayer().getUniqueId()); // If the player data is not null, it means that the player worlds were already saved into the database.
             WorldLink.get().getPlayerManager().removePlayer(WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer().getUniqueId()));
         });

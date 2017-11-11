@@ -136,6 +136,7 @@ public class PlayerUtils {
             player.getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR)});
 
             player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            player.setFireTicks(0);
 
             player.setTotalExperience(0);
             player.setLevel(0);

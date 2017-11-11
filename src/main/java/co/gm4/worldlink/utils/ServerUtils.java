@@ -70,6 +70,11 @@ public class ServerUtils {
             return;
         }
 
+        // Do these effects after savePlayer so they don't save with the player data
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 60, 255));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 60, 15));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 60, 255));
+
         sendToServer(player, linkWorld.getName());
     }
 
@@ -111,6 +116,7 @@ public class ServerUtils {
         if (link.isZoomOnClick()) player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 255));
         if (link.isBlindnessOnClick()) player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 15));
         //if (link.isPortalSoundOnClick()) player.playSound(player.getEyeLocation(), Sound.BLOCK_PORTAL_TRIGGER);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 60, 255));
 
         sendToServer(player, link.getName());
         if (!link.getAfterCommands().isEmpty()) {

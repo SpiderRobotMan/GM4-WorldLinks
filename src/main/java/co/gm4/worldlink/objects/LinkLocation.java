@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.HashMap;
@@ -76,8 +75,8 @@ public class LinkLocation implements ConfigurationSerializable {
     public LinkLocation add(double x, double y, double z) {
         LinkLocation linkLocation = clone();
         linkLocation.x += x;
-        linkLocation.y += x;
-        linkLocation.z += x;
+        linkLocation.y += y;
+        linkLocation.z += z;
         linkLocation.setIgnoreX(this.ignoreX);
         linkLocation.setIgnoreY(this.ignoreY);
         linkLocation.setIgnoreZ(this.ignoreZ);
