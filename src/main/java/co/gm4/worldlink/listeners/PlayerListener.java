@@ -135,6 +135,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        if ((System.currentTimeMillis() - WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer()).getLastLoginTime()) < 2000) { // Don't remove them for 40 ticks = 2 seconds TODO Add config option for this
+            return;
+        }
+
         if (notMoved.contains(event.getPlayer().getUniqueId())) notMoved.remove(event.getPlayer().getUniqueId());
     }
 
