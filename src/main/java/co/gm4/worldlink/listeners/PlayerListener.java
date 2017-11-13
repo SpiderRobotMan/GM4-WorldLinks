@@ -15,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 
@@ -127,20 +128,28 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
+    public void onTarget(EntityTargetEvent event) {
+        if(event.getTarget() instanceof Player && notMoved.contains(event.getTarget().getUniqueId())) {
+            event.setTarget(null);
+        }
+    }
+
+    @EventHandler
     public void onHurt(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player && notMoved.contains(((Player) event.getEntity()).getPlayer().getUniqueId())) {
+        if (event.getEntity() instanceof Player && notMoved.contains(event.getEntity().getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        if ((System.currentTimeMillis() - WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer()).getLastLoginTime()) < 2000) { // Don't remove them for 40 ticks = 2 seconds TODO Add config option for this
+        if ((System.currentTimeMillis() - WorldLink.get().getPlayerManager().getLinkPlayer(event.getPlayer()).getLastLoginTime()) < 4000) { // Don't remove them for 80 ticks = 4 seconds TODO Add config option for this
             return;
         }
 
         if (notMoved.contains(event.getPlayer().getUniqueId())) notMoved.remove(event.getPlayer().getUniqueId());
     }
+
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDeath(PlayerDeathEvent event) {

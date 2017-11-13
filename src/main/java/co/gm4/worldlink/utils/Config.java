@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Getter
 public class Config {
 
-    private final FileConfiguration config = WorldLink.get().getConfig();
+    private final FileConfiguration config;
 
     private final String serverName;
 
@@ -42,6 +42,8 @@ public class Config {
     public Config() {
         WorldLink.get().saveDefaultConfig();
         WorldLink.get().reloadConfig();
+
+        config = WorldLink.get().getConfig();
 
         serverName = config.getString("server.name", "GM4-" + UUID.randomUUID().toString().substring(0, 8));
 
