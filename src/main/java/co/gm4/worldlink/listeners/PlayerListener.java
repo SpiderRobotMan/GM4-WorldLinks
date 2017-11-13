@@ -198,6 +198,7 @@ public class PlayerListener implements Listener {
     }
 
     private void respawnPlayer(Player player) {
+        player.setExp(0);
         player.setFireTicks(0);
         player.setFallDistance(0f);
         player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
