@@ -171,6 +171,7 @@ public class PlayerListener implements Listener {
             respawnPlayer(linkPlayer.getPlayer());
             ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(respawnLocation.getWorld()), respawnLocation, LinkLocationType.ABSOLUTE_SAFE);
         } else if (deathLocation != null && !defaultSpawn.isEmpty()) {
+
             List<String> defaultSpawnList = Arrays.stream(defaultSpawn.split(", ")).collect(Collectors.toList());
             Location location = event.getRespawnLocation().clone();
 
@@ -188,9 +189,12 @@ public class PlayerListener implements Listener {
             }
 
             String serverName = WorldLink.get().getPluginConfig().getDefaultSpawnServer();
+            respawnPlayer(linkPlayer.getPlayer());
+
             if (!serverName.isEmpty() && !serverName.equals("%same%")) {
-                respawnPlayer(linkPlayer.getPlayer());
                 ServerUtils.sendToLinkWorld(linkPlayer, new LinkWorld(serverName), new LinkLocation(location), LinkLocationType.ABSOLUTE_SAFE);
+            } else {
+                event.setRespawnLocation(location);
             }
         }
 
