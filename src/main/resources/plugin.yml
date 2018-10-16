@@ -4,6 +4,10 @@ main: co.gm4.worldlink.WorldLink
 authors: [MatrixTunnel, theminecoder]
 
 commands:
+  wlabout:
+    description: Shows license and source code
+    permission: gm4.command.about
+    usage: /wlabout
   world:
     description: Allows you to connect to the different worlds
     permission: gm4.command.world
@@ -14,6 +18,8 @@ commands:
     usage: /wlreload
 
 permissions:
+  gm4.command.wlabout:
+    default: true
   gm4.command.world:
     default: op
   gm4.command.reload:
