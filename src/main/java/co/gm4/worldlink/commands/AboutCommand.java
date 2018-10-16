@@ -16,9 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package co.gm4.worldlink.modules;
+package co.gm4.worldlink.commands;
 
-/**
- * Created by MatrixTunnel on 9/19/2017.
- */
-public abstract class Module {}
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+
+public class AboutCommand implements CommandExecutor {
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        sender.sendMessage(ChatColor.GRAY + "WorldLink by Gamemode 4\nLicensed under the GNU Affero General Public License\nhttps://github.com/SpiderRobotMan/GM4-WorldLinks");
+        return true;
+    }
+
+}
